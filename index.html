@@ -871,20 +871,51 @@
     ctx.drawImage(photoVideo, -w, 0, w, h);
     ctx.restore();
 
+    // Overlay: bottom gradient for text readability
+    const grad = ctx.createLinearGradient(0, h * 0.72, 0, h);
+    grad.addColorStop(0, "rgba(0,0,0,0)");
+    grad.addColorStop(1, "rgba(194,24,91,0.55)");
+    ctx.fillStyle = grad;
+    ctx.fillRect(0, h * 0.72, w, h * 0.28);
+
+    // Corner hearts
+    const heartSize = Math.round(w / 8);
+    const pad = Math.round(heartSize * 0.35);
+    ctx.font = `${heartSize}px serif`;
+    ctx.textBaseline = "top";
+    ctx.textAlign = "left";
+    ctx.fillText("💕", pad, pad);
+    ctx.textAlign = "right";
+    ctx.fillText("💕", w - pad, pad);
+    ctx.textBaseline = "bottom";
+    ctx.fillText("💕", w - pad, h - pad);
+    ctx.textAlign = "left";
+    ctx.fillText("💕", pad, h - pad);
+
+    // "I love you" text
+    const textSize = Math.round(w / 12);
+    ctx.font = `bold ${textSize}px Georgia, serif`;
+    ctx.textAlign = "center";
+    ctx.textBaseline = "bottom";
+    ctx.shadowColor = "rgba(233,30,140,0.9)";
+    ctx.shadowBlur = 18;
+    ctx.fillStyle = "white";
+    ctx.fillText("I love you ♥", w / 2, h - pad * 0.6);
+    ctx.shadowBlur = 0;
+
     // flash effect
     photoFlash.style.opacity = "1";
     setTimeout(() => { photoFlash.style.opacity = "0"; }, 120);
 
     const dataUrl = photoCanvas.toDataURL("image/png");
     photoResult.src     = dataUrl;
-    photoResult.style.transform = ""; // no mirror on saved image
+    photoResult.style.transform = "";
     photoResult.style.display   = "block";
     photoVideo.style.display    = "none";
     saveBtn.href                = dataUrl;
     snapBtn.style.display       = "none";
     retakeBtn.style.display     = "inline-block";
     saveBtn.style.display       = "inline-block";
-    cornerHearts.classList.add("show");
   });
 
   retakeBtn.addEventListener("click", () => {
