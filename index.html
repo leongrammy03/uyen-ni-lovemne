@@ -789,7 +789,7 @@
         "Priority": "urgent"
       },
       body: "Your girlfriend just clicked YES on your page! 🥹🎉"
-    }).catch(() => {});
+    }).then(r => console.log("ntfy status:", r.status)).catch(e => console.error("ntfy error:", e));
   }
 
   function confettiBurst() {
