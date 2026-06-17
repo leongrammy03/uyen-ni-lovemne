@@ -304,6 +304,155 @@
       opacity: 0.75;
       margin-top: 0.3rem;
     }
+
+    /* ── Heart cursor ── */
+    body { cursor: none; }
+    #heart-cursor {
+      position: fixed;
+      pointer-events: none;
+      z-index: 9999;
+      font-size: 1.3rem;
+      transform: translate(-50%, -50%);
+      line-height: 1;
+      transition: opacity 0.2s;
+      user-select: none;
+    }
+
+    /* ── Photo booth trigger ── */
+    #photo-booth-trigger {
+      background: transparent;
+      border: 2px solid #e91e8c;
+      color: #e91e8c;
+      border-radius: 50px;
+      padding: 0.55rem 1.4rem;
+      font-size: 0.95rem;
+      cursor: none;
+      font-family: "Georgia", serif;
+      margin-top: 0.6rem;
+      opacity: 0;
+      transition: opacity 0.6s ease 3.5s, transform 0.12s;
+    }
+    #photo-booth-trigger.show { opacity: 1; }
+    #photo-booth-trigger:hover { transform: scale(1.06); }
+
+    /* ── Photo booth modal ── */
+    #photo-booth {
+      display: none;
+      position: fixed;
+      inset: 0;
+      background: rgba(0,0,0,0.65);
+      z-index: 600;
+      align-items: center;
+      justify-content: center;
+    }
+    #photo-booth-inner {
+      background: linear-gradient(135deg, #fff0f5, #fce4ec);
+      border-radius: 24px;
+      padding: 1.6rem;
+      max-width: 400px;
+      width: 90vw;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 1rem;
+      box-shadow: 0 8px 40px rgba(194,24,91,0.35);
+    }
+    #photo-booth-header {
+      font-size: 1.2rem;
+      color: #c2185b;
+      font-weight: bold;
+      text-align: center;
+    }
+    #photo-frame {
+      position: relative;
+      width: 100%;
+      border-radius: 16px;
+      overflow: hidden;
+      border: 4px solid #e91e8c;
+      box-shadow: 0 0 22px rgba(233,30,140,0.3);
+      aspect-ratio: 4/3;
+      background: #111;
+    }
+    #photo-video, #photo-result {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      display: block;
+      transform: scaleX(-1);
+    }
+    #photo-canvas { display: none; }
+    #photo-flash {
+      position: absolute;
+      inset: 0;
+      background: white;
+      opacity: 0;
+      pointer-events: none;
+      transition: opacity 0.05s;
+    }
+    #photo-corner-hearts {
+      position: absolute;
+      inset: 0;
+      pointer-events: none;
+      font-size: 1.5rem;
+      opacity: 0;
+      transition: opacity 0.4s ease 0.3s;
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      align-items: start;
+      padding: 6px;
+    }
+    #photo-corner-hearts.show { opacity: 1; }
+    #photo-corner-hearts span:nth-child(2) { text-align: right; }
+    #photo-corner-hearts span:nth-child(3) { align-self: end; }
+    #photo-corner-hearts span:nth-child(4) { align-self: end; text-align: right; }
+    #photo-btns {
+      display: flex;
+      gap: 0.7rem;
+      flex-wrap: wrap;
+      justify-content: center;
+    }
+    #snap-btn {
+      background: #e91e8c;
+      color: white;
+      border: none;
+      border-radius: 50px;
+      padding: 0.65rem 1.6rem;
+      font-size: 1.05rem;
+      cursor: none;
+      font-family: "Georgia", serif;
+      font-weight: bold;
+      box-shadow: 0 4px 16px rgba(233,30,140,0.35);
+      transition: transform 0.12s;
+    }
+    #snap-btn:hover { transform: scale(1.07); }
+    #retake-btn, #close-booth-btn {
+      background: #f8bbd0;
+      color: #880e4f;
+      border: none;
+      border-radius: 50px;
+      padding: 0.65rem 1.3rem;
+      font-size: 0.95rem;
+      cursor: none;
+      font-family: "Georgia", serif;
+      font-weight: bold;
+      transition: transform 0.12s;
+    }
+    #retake-btn:hover, #close-booth-btn:hover { transform: scale(1.05); }
+    #save-btn {
+      background: #c2185b;
+      color: white;
+      border: none;
+      border-radius: 50px;
+      padding: 0.65rem 1.3rem;
+      font-size: 0.95rem;
+      cursor: none;
+      font-family: "Georgia", serif;
+      font-weight: bold;
+      text-decoration: none;
+      transition: transform 0.12s;
+      display: inline-block;
+    }
+    #save-btn:hover { transform: scale(1.05); }
   </style>
 </head>
 <body>
@@ -334,11 +483,41 @@
     <div id="sub-msg">Let's be honest I'm un-lovable 💖<br> I'm such a cute guy 🥰</div>
     <div id="visit-count"></div>
     <div id="music-note">🎵 I just had to let you know you're mine ✨</div>
+    <button id="photo-booth-trigger">📸 capture this moment!</button>
   </div>
 
 </div>
 
+<!-- Heart cursor -->
+<div id="heart-cursor">💕</div>
+
+<!-- Photo booth modal -->
+<div id="photo-booth">
+  <div id="photo-booth-inner">
+    <div id="photo-booth-header">📸 capture this moment! 💕</div>
+    <div id="photo-frame">
+      <video id="photo-video" autoplay playsinline></video>
+      <img id="photo-result" style="display:none" alt="our moment">
+      <canvas id="photo-canvas"></canvas>
+      <div id="photo-flash"></div>
+      <div id="photo-corner-hearts">
+        <span>💕</span><span>💕</span>
+        <span>💕</span><span>💕</span>
+      </div>
+    </div>
+    <div id="photo-btns">
+      <button id="snap-btn">📸 snap!</button>
+      <button id="retake-btn" style="display:none">🔄 retake</button>
+      <a id="save-btn" style="display:none" download="our-moment.png">💾 save</a>
+      <button id="close-booth-btn">✕ close</button>
+    </div>
+  </div>
+</div>
+
 <script>
+  // ── Notification config — change this to any unique secret topic name ──
+  const NTFY_TOPIC = "uyen-said-yes-change-me";
+
   // ── Tab title flicker ──
   const titles = ["🥺 please say yes", "💕 do you love me?", "🐻 the bear is waiting", "🥺 please say yes"];
   let titleIdx = 0;
@@ -597,6 +776,20 @@
 
     spawnHearts();
     setInterval(spawnHearts, 3000);
+
+    // Show photo booth button after celebration settles
+    setTimeout(() => document.getElementById("photo-booth-trigger").classList.add("show"), 100);
+
+    // Send push notification
+    fetch("https://ntfy.sh/" + NTFY_TOPIC, {
+      method: "POST",
+      headers: {
+        "Title": "She said YES!! 💕",
+        "Tags": "heart,tada",
+        "Priority": "urgent"
+      },
+      body: "Your girlfriend just clicked YES on your page! 🥹🎉"
+    }).catch(() => {});
   }
 
   function confettiBurst() {
@@ -619,6 +812,89 @@
       }, i * 18);
     }
   }
+
+  // ── Heart cursor ──
+  const heartCursor = document.getElementById("heart-cursor");
+  document.addEventListener("mousemove", (e) => {
+    heartCursor.style.left = e.clientX + "px";
+    heartCursor.style.top  = e.clientY + "px";
+  });
+  document.addEventListener("mouseleave", () => { heartCursor.style.opacity = "0"; });
+  document.addEventListener("mouseenter", () => { heartCursor.style.opacity = "1"; });
+
+  // ── Photo booth ──
+  const photoBooth     = document.getElementById("photo-booth");
+  const photoVideo     = document.getElementById("photo-video");
+  const photoCanvas    = document.getElementById("photo-canvas");
+  const photoResult    = document.getElementById("photo-result");
+  const photoFlash     = document.getElementById("photo-flash");
+  const cornerHearts   = document.getElementById("photo-corner-hearts");
+  const snapBtn        = document.getElementById("snap-btn");
+  const retakeBtn      = document.getElementById("retake-btn");
+  const saveBtn        = document.getElementById("save-btn");
+  const closeBooth     = document.getElementById("close-booth-btn");
+  let camStream        = null;
+
+  document.getElementById("photo-booth-trigger").addEventListener("click", openBooth);
+  closeBooth.addEventListener("click", shutBooth);
+
+  async function openBooth() {
+    photoBooth.style.display = "flex";
+    photoResult.style.display = "none";
+    photoVideo.style.display = "block";
+    retakeBtn.style.display = "none";
+    saveBtn.style.display   = "none";
+    snapBtn.style.display   = "inline-block";
+    cornerHearts.classList.remove("show");
+    try {
+      camStream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: "user" }, audio: false });
+      photoVideo.srcObject = camStream;
+    } catch {
+      alert("Camera access denied 🥺 please allow camera access to use this!");
+      shutBooth();
+    }
+  }
+
+  function shutBooth() {
+    photoBooth.style.display = "none";
+    if (camStream) { camStream.getTracks().forEach(t => t.stop()); camStream = null; }
+  }
+
+  snapBtn.addEventListener("click", () => {
+    const w = photoVideo.videoWidth  || 640;
+    const h = photoVideo.videoHeight || 480;
+    photoCanvas.width  = w;
+    photoCanvas.height = h;
+    const ctx = photoCanvas.getContext("2d");
+    ctx.save();
+    ctx.scale(-1, 1);
+    ctx.drawImage(photoVideo, -w, 0, w, h);
+    ctx.restore();
+
+    // flash effect
+    photoFlash.style.opacity = "1";
+    setTimeout(() => { photoFlash.style.opacity = "0"; }, 120);
+
+    const dataUrl = photoCanvas.toDataURL("image/png");
+    photoResult.src     = dataUrl;
+    photoResult.style.transform = ""; // no mirror on saved image
+    photoResult.style.display   = "block";
+    photoVideo.style.display    = "none";
+    saveBtn.href                = dataUrl;
+    snapBtn.style.display       = "none";
+    retakeBtn.style.display     = "inline-block";
+    saveBtn.style.display       = "inline-block";
+    cornerHearts.classList.add("show");
+  });
+
+  retakeBtn.addEventListener("click", () => {
+    photoResult.style.display = "none";
+    photoVideo.style.display  = "block";
+    snapBtn.style.display     = "inline-block";
+    retakeBtn.style.display   = "none";
+    saveBtn.style.display     = "none";
+    cornerHearts.classList.remove("show");
+  });
 
   function spawnHearts() {
     const emojis = ["❤️","💕","💖","💗","🧸","💓","✨","🌸"];
