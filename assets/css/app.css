@@ -143,6 +143,43 @@ body {
   }
 }
 
+@keyframes planeCruise {
+  0% {
+    transform: translateX(-140px);
+    opacity: 0;
+  }
+  8%,
+  88% {
+    opacity: 0.9;
+  }
+  100% {
+    transform: translateX(calc(100vw + 140px));
+    opacity: 0;
+  }
+}
+
+@keyframes neonFlicker {
+  0%,
+  100% {
+    opacity: 1;
+  }
+  48% {
+    opacity: 0.82;
+  }
+  50% {
+    opacity: 0.35;
+  }
+  52% {
+    opacity: 1;
+  }
+  76% {
+    opacity: 0.68;
+  }
+  78% {
+    opacity: 1;
+  }
+}
+
 @keyframes achievementPop {
   0% {
     transform: translate(-50%, -16px) scale(0.88);
