@@ -2,6 +2,7 @@ window.LOVE_GAME_CONFIG = {
   defaults: {
     partnerName: 'Uyen Ni',
     senderName: 'Leon',
+    senderEmail: 'leongramminger@gmail.com',
     dateTitle: 'Dinner & a sunset walk',
     time: '19:00',
     durationHours: '2',

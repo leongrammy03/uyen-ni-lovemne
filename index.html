@@ -393,12 +393,14 @@ class Component extends DCLogic {
     const start=new Date(`${date}T${time||'19:00'}`);
     const end=new Date(start.getTime()+parseFloat(dur||'2')*3600000);
     const fmt=(d)=>`${d.getFullYear()}${this.pad(d.getMonth()+1)}${this.pad(d.getDate())}T${this.pad(d.getHours())}${this.pad(d.getMinutes())}00`;
-    const sender=(this.props && this.props.senderName) || 'Leon';
+    const sender=(this.props && this.props.senderName) || this.defaults.senderName || 'Leon';
+    const attendeeEmail=this.defaults.senderEmail;
     const u=new URL('https://calendar.google.com/calendar/render');
     u.searchParams.set('action','TEMPLATE');
     u.searchParams.set('text', title || ('Date with '+sender));
     u.searchParams.set('dates', `${fmt(start)}/${fmt(end)}`);
     u.searchParams.set('details', 'Made with love by '+sender+'. Cannot wait! <3');
+    if(attendeeEmail) u.searchParams.set('add', attendeeEmail);
     if(loc) u.searchParams.set('location', loc);
     window.open(u.toString(), '_blank');
     this.setState({ scheduled:true });
