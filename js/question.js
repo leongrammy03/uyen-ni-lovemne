@@ -108,5 +108,5 @@ function triggerJumpScare() {
   }, 1500);
 }
 
-// Wire yes button
-yesBtn.addEventListener("click", onYes);
+// Wire yes button (arrow wrapper so onYes is resolved after success.js loads)
+yesBtn.addEventListener("click", () => onYes());
