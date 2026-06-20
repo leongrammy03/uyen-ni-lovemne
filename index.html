@@ -447,6 +447,10 @@ class Component extends DCLogic {
   startGame=()=>{
     this.ensureAudio();
     if(this.state.bootPct < 100){ this.setState({ bootPct:100 }); this.bootLoad(); return; }
+    const music=document.getElementById('loading-music');
+    if(music && !music.paused){
+      const fade=setInterval(()=>{ if(music.volume>0.05){ music.volume=Math.max(0,music.volume-0.05); } else { music.pause(); music.currentTime=0; clearInterval(fade); } },40);
+    }
     this.bootLoad();
     this.bootChime();
     this.setState({ screen:'ask' });
@@ -454,6 +458,7 @@ class Component extends DCLogic {
   powerOn=()=>{
     if(this.state.powerState!=='off') return;
     this.crtCrackle();
+    setTimeout(()=>{ const music=document.getElementById('loading-music'); if(music){ music.volume=0.55; music.play().catch(()=>{}); } },1000);
     this.setState({ powerState:'on' });
     clearTimeout(this._powerTimer);
     this._powerTimer=setTimeout(()=>this.setState({ powerState:'done' }),1450);
@@ -725,5 +730,6 @@ class Component extends DCLogic {
   }
 }
 </script>
+<audio id="loading-music" loop src="./assets/reference/Love Lies [8 Bit Tribute to Khalid & Normani] - 8 Bit Universe.mp3"></audio>
 </body>
 </html>
