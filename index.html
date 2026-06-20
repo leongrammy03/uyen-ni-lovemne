@@ -63,6 +63,14 @@
     </div>
   </sc-if>
 
+  <sc-if value="{{ hasAchievementToast }}" hint-placeholder-val="{{ false }}">
+    <div style="position:fixed;top:22px;left:50%;z-index:80;width:min(430px,88vw);background:#241531;border:4px solid #6b4636;box-shadow:inset 3px 3px 0 #3a2348,inset -3px -3px 0 #160d20,6px 6px 0 rgba(20,10,28,.45),0 0 18px rgba(255,93,115,.42);padding:13px 15px;box-sizing:border-box;animation:achievementPop 2.9s ease-in-out both;pointer-events:none;">
+      <div style="font-family:Silkscreen,monospace;font-size:10px;color:#9bd9f2;letter-spacing:2px;margin-bottom:7px;">ACHIEVEMENT UNLOCKED</div>
+      <div style="font-family:'Press Start 2P',monospace;font-size:13px;line-height:1.5;color:#ffe08a;text-shadow:0 0 8px rgba(255,224,138,.42);">{{ achievementTitle }}</div>
+      <div style="font-family:Silkscreen,monospace;font-size:13px;line-height:1.45;color:#e6c6e0;margin-top:7px;">{{ achievementBody }}</div>
+    </div>
+  </sc-if>
+
   <div style="flex:1 1 auto;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:30px 16px;box-sizing:border-box;position:relative;z-index:2;">
   <sc-if value="{{ isAsk }}" hint-placeholder-val="{{ true }}">
     <div style="position:relative;z-index:2;width:min(560px,92vw);background:#fff8f0;border:4px solid #6b4636;box-shadow:inset 4px 4px 0 #fffdfb,inset -4px -4px 0 #f0d8c4,10px 10px 0 rgba(91,58,46,.22);padding:34px 26px 26px;display:flex;flex-direction:column;align-items:center;gap:16px;box-sizing:border-box;">
@@ -279,6 +287,7 @@ class Component extends DCLogic {
       screen:'boot', bootPct:0, reasonIdx:0, typed:'',
       stageIdx:0, qIdx:0, lives:this.maxLives, selected:null, answered:false,
       noCount:0, noPos:null, yesScale:1, mood:'idle', clockTick:0,
+      correctCount:0, wrongCount:0, achievementToast:null,
       title:(props && props.dateTitle) || defaults.dateTitle || 'Dinner & a sunset walk',
       date:`${t.getFullYear()}-${p2(t.getMonth()+1)}-${p2(t.getDate())}`,
       time:defaults.time || '19:00', dur:defaults.durationHours || '2', loc:'', scheduled:false
@@ -290,6 +299,8 @@ class Component extends DCLogic {
     this.copy=cfg.copy || {};
     this.sprites=cfg.sprites || {};
     this.effects=cfg.effects || {};
+    this.achievements=cfg.achievements || [];
+    this.unlockedAchievementIds=new Set();
     const bunny=this.sprites.bunny || {};
     const heart=this.sprites.heart || {};
     this.bunnyShadow=this.spriteShadow(bunny.map || [], bunny.pixelSize || 11, bunny.colors || {});
@@ -315,7 +326,7 @@ class Component extends DCLogic {
     this._type=setInterval(()=>this.tick(),58);
     this._clock=setInterval(()=>this.setState(s=>({ clockTick:s.clockTick+1 })),30000);
   }
-  componentWillUnmount(){ clearInterval(this._boot); clearInterval(this._type); clearInterval(this._clock); clearTimeout(this._advTimer); }
+  componentWillUnmount(){ clearInterval(this._boot); clearInterval(this._type); clearInterval(this._clock); clearTimeout(this._advTimer); clearTimeout(this._achievementTimer); }
   tick(){
     if(this.state.screen!=='win') return;
     const full=this.reasons[this.state.reasonIdx] || '';
@@ -370,6 +381,17 @@ class Component extends DCLogic {
   buzz(){ this.tone(196,0.18,'square',0.06,0); this.tone(147,0.22,'square',0.05,0.07); }
 
   set(k){ return (e)=>this.setState({ [k]: e.target.value }); }
+  unlockAchievement(id){
+    if(!id || this.unlockedAchievementIds.has(id)) return;
+    const a=this.achievements.find((x)=>x.id===id);
+    if(!a) return;
+    this.unlockedAchievementIds.add(id);
+    clearTimeout(this._achievementTimer);
+    this.tone(988,0.08,'square',0.045,0);
+    this.tone(1318,0.12,'square',0.045,0.08);
+    this.setState({ achievementToast:a });
+    this._achievementTimer=setTimeout(()=>this.setState({ achievementToast:null }),2900);
+  }
 
   dodge=(e)=>{
     if(e){ if(e.preventDefault) e.preventDefault(); }
@@ -378,17 +400,21 @@ class Component extends DCLogic {
     const x=Math.max(0,Math.random()*(w-bw));
     const y=Math.max(0,Math.random()*(h-bh));
     this.squeak();
-    this.setState(s=>({ noPos:{x,y}, noCount:s.noCount+1, yesScale:Math.min(2.3,s.yesScale+0.13), mood:'sad' }));
+    this.setState(s=>({ noPos:{x,y}, noCount:s.noCount+1, yesScale:Math.min(2.3,s.yesScale+0.13), mood:'sad' }),()=>{
+      if(this.state.noCount>=3) this.unlockAchievement('no_button_survivor');
+    });
   };
 
-  sayYes=()=>{ this.happy(); this.setState({ screen:'stageintro', stageIdx:0, qIdx:0, lives:this.maxLives, selected:null, answered:false, mood:'idle' }); };
+  sayYes=()=>{ this.happy(); this.unlockAchievement('heart_coin'); this.setState({ screen:'stageintro', stageIdx:0, qIdx:0, lives:this.maxLives, selected:null, answered:false, mood:'idle', correctCount:0, wrongCount:0 }); };
   beginStage=()=>{ this.blip(); this.setState({ screen:'quiz', qIdx:0, selected:null, answered:false, mood:'idle' }); };
   answer=(i)=>{
     if(this.state.answered) return;
     const stage=this.stages[this.state.stageIdx]; const q=stage.qs[this.state.qIdx];
     const correct=(i===q.correct);
     if(correct) this.happy(); else this.buzz();
-    this.setState(st=>({ selected:i, answered:true, mood: correct?'happy':'sad', lives: correct?st.lives:st.lives-1 }));
+    this.setState(st=>({ selected:i, answered:true, mood: correct?'happy':'sad', lives: correct?st.lives:st.lives-1, correctCount:st.correctCount+(correct?1:0), wrongCount:st.wrongCount+(correct?0:1) }),()=>{
+      if(correct && this.state.correctCount===1) this.unlockAchievement('first_hit');
+    });
     clearTimeout(this._advTimer);
     this._advTimer=setTimeout(()=>this.advance(correct), 1200);
   };
@@ -396,14 +422,14 @@ class Component extends DCLogic {
     const s=this.state; const stage=this.stages[s.stageIdx];
     if(!wasCorrect && s.lives<=0){ this.setState({ screen:'gameover', mood:'sad' }); return; }
     if(s.qIdx < stage.qs.length-1){ this.setState({ qIdx:s.qIdx+1, selected:null, answered:false, mood:'idle' }); }
-    else { this.setState({ screen:'stageclear', selected:null, answered:false, mood:'happy' }); }
+    else { this.unlockAchievement('stage_clear'); this.setState({ screen:'stageclear', selected:null, answered:false, mood:'happy' }); }
   }
   nextStage=()=>{
     const s=this.state;
     if(s.stageIdx < this.stages.length-1){ this.blip(); this.setState({ screen:'stageintro', stageIdx:s.stageIdx+1, qIdx:0, mood:'idle' }); }
-    else { this.happy(); this.setState({ screen:'win', mood:'happy' }); }
+    else { this.happy(); if(s.wrongCount===0) this.unlockAchievement('perfect_run'); this.setState({ screen:'win', mood:'happy' }); }
   };
-  retryQuiz=()=>{ this.blip(); this.setState({ screen:'stageintro', stageIdx:0, qIdx:0, lives:this.maxLives, selected:null, answered:false, mood:'idle' }); };
+  retryQuiz=()=>{ this.blip(); this.setState({ screen:'stageintro', stageIdx:0, qIdx:0, lives:this.maxLives, selected:null, answered:false, mood:'idle', correctCount:0, wrongCount:0 }); };
 
   pad(n){ return String(n).padStart(2,'0'); }
   formatClock(tz){
@@ -429,6 +455,7 @@ class Component extends DCLogic {
     if(attendeeEmail) u.searchParams.set('add', attendeeEmail);
     if(loc) u.searchParams.set('location', loc);
     window.open(u.toString(), '_blank');
+    this.unlockAchievement('date_quest');
     this.setState({ scheduled:true });
   };
 
@@ -485,9 +512,11 @@ class Component extends DCLogic {
       });
     }
     const _lives=Array.from({ length:this.maxLives },(_,i)=>({ c: i<s.lives?'#ff5d73':'#caa9b0' }));
+    const toast=s.achievementToast || {};
     return {
       isBoot:s.screen==='boot', bootPct:s.bootPct, bootReady:s.bootPct>=100, notBootReady:s.bootPct<100,
       startGame:this.startGame, reasonText:s.typed,
+      hasAchievementToast:!!s.achievementToast, achievementTitle:toast.title || '', achievementBody:toast.body || '',
       isAsk:s.screen==='ask', isWin:s.screen==='win', scheduled:s.scheduled,
       isStageIntro:s.screen==='stageintro', isQuiz:s.screen==='quiz', isStageClear:s.screen==='stageclear', isGameOver:s.screen==='gameover',
       stageName:_stage?_stage.name:'', stageBlurb:_stage?_stage.blurb:'', stageNumber:s.stageIdx+1, totalStages:this.totalStages,

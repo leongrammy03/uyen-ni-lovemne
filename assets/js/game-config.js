@@ -145,6 +145,39 @@ window.LOVE_GAME_CONFIG = {
     happy: [523, 659, 784, 1046, 1318]
   },
 
+  achievements: [
+    {
+      id: 'heart_coin',
+      title: 'HEART COIN INSERTED',
+      body: 'Player 1 accepted the mission.'
+    },
+    {
+      id: 'no_button_survivor',
+      title: 'NO BUTTON SURVIVOR',
+      body: 'Dodged fate three times and still got caught.'
+    },
+    {
+      id: 'first_hit',
+      title: 'FIRST HIT',
+      body: 'Correct answer. Combo started.'
+    },
+    {
+      id: 'stage_clear',
+      title: 'STAGE CLEAR BONUS',
+      body: 'Distance took damage. Love meter rising.'
+    },
+    {
+      id: 'perfect_run',
+      title: 'PERFECT RUN',
+      body: 'No hearts lost. Leon is emotionally defeated.'
+    },
+    {
+      id: 'date_quest',
+      title: 'DATE QUEST ACCEPTED',
+      body: 'Calendar mission unlocked.'
+    }
+  ],
+
   effects: {
     confettiColors: ['#ff7a5c', '#ffd6a5', '#ff9fb0', '#ffe08a', '#ff5d73', '#9bd9f2'],
     skyColors: {
