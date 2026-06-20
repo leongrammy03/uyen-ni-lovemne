@@ -100,6 +100,17 @@
     </div>
   </sc-if>
 
+  <sc-if value="{{ isBriefing }}" hint-placeholder-val="{{ false }}">
+    <div style="position:relative;z-index:2;width:min(560px,92vw);background:#241531;border:4px solid #4a2d52;box-shadow:inset 3px 3px 0 #3a2348,inset -3px -3px 0 #160d20,10px 10px 0 rgba(20,10,28,.4);padding:34px 28px;display:flex;flex-direction:column;align-items:center;gap:18px;box-sizing:border-box;text-align:center;">
+      <div style="font-family:Silkscreen,monospace;font-size:12px;color:#9bd9f2;letter-spacing:2px;">MISSION BRIEFING</div>
+      <div style="transform:scale(.62);margin:-14px 0;"><div style="position:relative;width:176px;height:176px;animation:{{ bunnyAnim }};"><div style="position:absolute;left:0;top:0;width:11px;height:11px;box-shadow:{{ bunnyShadow }};"></div><div style="position:absolute;left:70px;top:119px;width:7px;height:7px;box-shadow:{{ mouthShadow }};"></div></div></div>
+      <div style="font-family:'Press Start 2P',monospace;font-size:16px;line-height:1.8;color:#ffd98a;text-shadow:0 0 10px rgba(255,217,138,.45),3px 3px 0 #6b4a1e;">HMM... IF YOU LOVE ME...</div>
+      <div style="font-family:Silkscreen,monospace;font-size:16px;line-height:1.6;color:#e6c6e0;max-width:420px;">then answer these questions for me, Player 1. Three hearts. No pressure. Okay, maybe a little.</div>
+      <div style="display:flex;align-items:center;gap:5px;font-family:Silkscreen,monospace;font-size:14px;color:#ff9fb0;"><span style="color:#ff5d73;">&#9829;</span><span style="color:#ff5d73;">&#9829;</span><span style="color:#ff5d73;">&#9829;</span> READY?</div>
+      <button onClick="{{ acceptBriefing }}" onMouseEnter="{{ blipH }}" style="font-family:'Press Start 2P',monospace;font-size:13px;line-height:1.5;color:#fff8f0;background:#3f8f5b;border:4px solid #2c5e3d;box-shadow:inset 3px 3px 0 #6fbf86,inset -3px -3px 0 #2c5e3d,4px 4px 0 #244c33;padding:15px 22px;cursor:pointer;">ACCEPT QUEST &#9654;</button>
+    </div>
+  </sc-if>
+
   <sc-if value="{{ isStageIntro }}" hint-placeholder-val="{{ false }}">
     <div style="position:relative;z-index:2;width:min(560px,92vw);background:#241531;border:4px solid #4a2d52;box-shadow:inset 3px 3px 0 #3a2348,inset -3px -3px 0 #160d20,10px 10px 0 rgba(20,10,28,.4);padding:36px 28px;display:flex;flex-direction:column;align-items:center;gap:18px;box-sizing:border-box;">
       <div style="font-family:'Press Start 2P',monospace;font-size:13px;color:#9bd9f2;letter-spacing:2px;">STAGE {{ stageNumber }} / {{ totalStages }}</div>
@@ -421,7 +432,8 @@ class Component extends DCLogic {
     });
   };
 
-  sayYes=()=>{ this.happy(); this.unlockAchievement('heart_coin'); this.setState({ screen:'stageintro', stageIdx:0, qIdx:0, lives:this.maxLives, selected:null, answered:false, mood:'idle', correctCount:0, wrongCount:0 }); };
+  sayYes=()=>{ this.happy(); this.unlockAchievement('heart_coin'); this.setState({ screen:'briefing', stageIdx:0, qIdx:0, lives:this.maxLives, selected:null, answered:false, mood:'happy', correctCount:0, wrongCount:0 }); };
+  acceptBriefing=()=>{ this.blip(); this.setState({ screen:'stageintro', mood:'idle' }); };
   beginStage=()=>{ this.blip(); this.setState({ screen:'quiz', qIdx:0, selected:null, answered:false, mood:'idle' }); };
   answer=(i)=>{
     if(this.state.answered) return;
@@ -534,7 +546,7 @@ class Component extends DCLogic {
       startGame:this.startGame, reasonText:s.typed,
       hasAchievementToast:!!s.achievementToast, achievementTitle:toast.title || '', achievementBody:toast.body || '',
       isAsk:s.screen==='ask', isWin:s.screen==='win', scheduled:s.scheduled,
-      isStageIntro:s.screen==='stageintro', isQuiz:s.screen==='quiz', isStageClear:s.screen==='stageclear', isGameOver:s.screen==='gameover',
+      isBriefing:s.screen==='briefing', isStageIntro:s.screen==='stageintro', isQuiz:s.screen==='quiz', isStageClear:s.screen==='stageclear', isGameOver:s.screen==='gameover',
       stageName:_stage?_stage.name:'', stageBlurb:_stage?_stage.blurb:'', stageNumber:s.stageIdx+1, totalStages:this.totalStages,
       quizQ:_q?_q.q:'', optionVMs:_optionVMs, lives:_lives, livesLeft:s.lives,
       partnerClockLabel:partner.toUpperCase()+' TIME',
@@ -544,7 +556,7 @@ class Component extends DCLogic {
       distanceClockText:'same moon, different clocks. link stable. hearts synced.',
       qNumber:s.qIdx+1, qTotalInStage:_stage?_stage.qs.length:0,
       lastStage:s.stageIdx>=this.totalStages-1, nextLabel:(s.stageIdx>=this.totalStages-1?'CLAIM YOUR DATE':'NEXT STAGE'),
-      beginStage:this.beginStage, nextStage:this.nextStage, retryQuiz:this.retryQuiz,
+      acceptBriefing:this.acceptBriefing, beginStage:this.beginStage, nextStage:this.nextStage, retryQuiz:this.retryQuiz,
       question:qs[Math.min(s.noCount,qs.length-1)] || `Do you still love me, ${partner}?`,
       noEscaped:!!s.noPos, notEscaped:!s.noPos,
       noLeft:s.noPos?Math.round(s.noPos.x):0, noTop:s.noPos?Math.round(s.noPos.y):0,
