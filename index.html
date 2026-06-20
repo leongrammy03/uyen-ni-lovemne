@@ -17,6 +17,15 @@
 
 <div style="position:relative;min-height:100vh;width:100%;background:linear-gradient(#ffd9a8 0%,#ffb184 44%,#ff9270 72%,#ff7a5c 100%);display:flex;flex-direction:column;font-family:Silkscreen,monospace;overflow-x:hidden;">
 
+  <sc-if value="{{ isPowerOff }}" hint-placeholder-val="{{ true }}">
+    <div onClick="{{ powerOn }}" class="crt-power-off">
+      <div class="crt-power-prompt">CLICK TO POWER ON</div>
+    </div>
+  </sc-if>
+  <sc-if value="{{ isPoweringOn }}" hint-placeholder-val="{{ false }}">
+    <div class="crt-power-on" aria-hidden="true"></div>
+  </sc-if>
+
   <div class="arcade-cabinet" aria-hidden="true">
     <div class="pixel-screen-mask top"></div>
     <div class="pixel-screen-mask bottom"></div>
@@ -375,7 +384,7 @@ class Component extends DCLogic {
     try{ completedDateIdeas=JSON.parse(window.localStorage.getItem(this.completedDateIdeasKey) || '[]'); }catch(e){ completedDateIdeas=[]; }
     const firstDateIdea=this.dateIdeas.find((idea)=>!completedDateIdeas.includes(idea.id)) || null;
     this.state={
-      screen:'boot', bootPct:0, reasonIdx:0, typed:'',
+      screen:'boot', powerState:'off', bootPct:0, reasonIdx:0, typed:'',
       stageIdx:0, qIdx:0, lives:this.maxLives, selected:null, answered:false,
       noCount:0, noPos:null, yesScale:1, mood:'idle', clockTick:0,
       correctCount:0, wrongCount:0, achievementToast:null,
@@ -421,7 +430,7 @@ class Component extends DCLogic {
     this._unlockAudio=()=>{ const ac=this.ensureAudio(); if(ac && ac.state==='suspended') ac.resume().catch(()=>{}); };
     window.addEventListener('pointerdown',this._unlockAudio,{ once:true });
   }
-  componentWillUnmount(){ clearInterval(this._boot); clearInterval(this._type); clearInterval(this._clock); clearTimeout(this._advTimer); clearTimeout(this._achievementTimer); if(this._unlockAudio) window.removeEventListener('pointerdown',this._unlockAudio); }
+  componentWillUnmount(){ clearInterval(this._boot); clearInterval(this._type); clearInterval(this._clock); clearTimeout(this._advTimer); clearTimeout(this._achievementTimer); clearTimeout(this._powerTimer); if(this._unlockAudio) window.removeEventListener('pointerdown',this._unlockAudio); }
   tick(){
     if(this.state.screen!=='win') return;
     const full=this.reasons[this.state.reasonIdx] || '';
@@ -441,6 +450,13 @@ class Component extends DCLogic {
     this.bootLoad();
     this.bootChime();
     this.setState({ screen:'ask' });
+  };
+  powerOn=()=>{
+    if(this.state.powerState!=='off') return;
+    this.crtCrackle();
+    this.setState({ powerState:'on' });
+    clearTimeout(this._powerTimer);
+    this._powerTimer=setTimeout(()=>this.setState({ powerState:'done' }),1450);
   };
 
   spriteShadow(map,px,colors){
@@ -474,6 +490,32 @@ class Component extends DCLogic {
     g.gain.exponentialRampToValueAtTime(0.0001,t0+dur);
     o.connect(g); g.connect(ac.destination);
     o.start(t0); o.stop(t0+dur+0.03);
+  }
+  crtCrackle(){
+    const ac=this.ensureAudio(); if(!ac) return;
+    if(ac.state==='suspended'){
+      window.addEventListener('pointerdown',()=>this.crtCrackle(),{ once:true });
+      return;
+    }
+    const t0=ac.currentTime;
+    const len=Math.floor(ac.sampleRate*0.55);
+    const buf=ac.createBuffer(1,len,ac.sampleRate);
+    const data=buf.getChannelData(0);
+    for(let i=0;i<len;i++){
+      const fade=1-(i/len);
+      data[i]=(Math.random()*2-1)*fade;
+    }
+    const src=ac.createBufferSource();
+    const filter=ac.createBiquadFilter();
+    const gain=ac.createGain();
+    filter.type='bandpass'; filter.frequency.value=1800; filter.Q.value=0.7;
+    gain.gain.setValueAtTime(0.0001,t0);
+    gain.gain.linearRampToValueAtTime(0.08,t0+0.02);
+    gain.gain.exponentialRampToValueAtTime(0.0001,t0+0.55);
+    src.buffer=buf;
+    src.connect(filter); filter.connect(gain); gain.connect(ac.destination);
+    src.start(t0); src.stop(t0+0.56);
+    this.tone(58,0.45,'sawtooth',0.018,0.04);
   }
   blip(){ this.tone(740,0.07,'square',0.05,0); }
   squeak(){ this.tone(300,0.06,'square',0.06,0); this.tone(540,0.06,'square',0.05,0.05); }
@@ -652,6 +694,7 @@ class Component extends DCLogic {
     const toast=s.achievementToast || {};
     return {
       isBoot:s.screen==='boot', bootPct:s.bootPct, bootReady:s.bootPct>=100, notBootReady:s.bootPct<100,
+      isPowerOff:s.powerState==='off', isPoweringOn:s.powerState==='on', powerOn:this.powerOn,
       startGame:this.startGame, reasonText:s.typed,
       hasAchievementToast:!!s.achievementToast, achievementTitle:toast.title || '', achievementBody:toast.body || '',
       isAsk:s.screen==='ask', isWin:s.screen==='win', scheduled:s.scheduled,
