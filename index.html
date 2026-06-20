@@ -3,6 +3,8 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
+<link rel="stylesheet" href="./assets/css/app.css">
+<script src="./assets/js/game-config.js"></script>
 <script src="./support.js"></script>
 </head>
 <body>
@@ -11,20 +13,6 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&family=Silkscreen:wght@400;700&display=swap" rel="stylesheet">
-<style>
-  html,body{margin:0;padding:0;background:#ff9270;}
-  *{image-rendering:pixelated;}
-  @keyframes bob{0%,100%{transform:translateY(0)}50%{transform:translateY(-9px)}}
-  @keyframes hop{0%,100%{transform:translateY(0)}30%{transform:translateY(-26px)}50%{transform:translateY(0)}55%{transform:translateY(-5px)}62%{transform:translateY(0)}}
-  @keyframes tremble{0%,100%{transform:translate(0,0) rotate(0)}20%{transform:translate(-3px,1px) rotate(-2.5deg)}40%{transform:translate(3px,-1px) rotate(2.5deg)}60%{transform:translate(-2px,1px) rotate(-1.5deg)}80%{transform:translate(2px,0) rotate(1.5deg)}}
-  @keyframes drip{0%{transform:translateY(0);opacity:0}15%{opacity:1}100%{transform:translateY(34px);opacity:0}}
-  @keyframes floatUp{0%{transform:translateY(12px) scale(.85);opacity:0}20%{opacity:1}100%{transform:translateY(-150px) scale(.5);opacity:0}}
-  @keyframes fall{0%{transform:translateY(-30px) rotate(0)}100%{transform:translateY(108vh) rotate(540deg)}}
-  @keyframes floatBg{0%,100%{transform:translateY(0)}50%{transform:translateY(-12px)}}
-  @keyframes glowPulse{0%,100%{box-shadow:inset 3px 3px 0 #ffb09c,inset -3px -3px 0 #d8472f,5px 5px 0 #6b4636,0 0 0 0 rgba(255,93,115,.5)}50%{box-shadow:inset 3px 3px 0 #ffb09c,inset -3px -3px 0 #d8472f,5px 5px 0 #6b4636,0 0 0 10px rgba(255,93,115,0)}}
-  @keyframes blink{0%,48%{opacity:1}50%,100%{opacity:.25}}
-  @keyframes twinkle{0%,100%{opacity:1}45%{opacity:.12}}
-</style>
 </helmet>
 
 <div style="position:relative;min-height:100vh;width:100%;background:linear-gradient(#ffd9a8 0%,#ffb184 44%,#ff9270 72%,#ff7a5c 100%);display:flex;flex-direction:column;font-family:Silkscreen,monospace;overflow-x:hidden;">
@@ -264,71 +252,37 @@
 class Component extends DCLogic {
   constructor(props){
     super(props);
+    const cfg=window.LOVE_GAME_CONFIG || {};
+    const defaults=cfg.defaults || {};
     const t=new Date(Date.now()+86400000);
     const p2=n=>String(n).padStart(2,'0');
+    this.maxLives=defaults.lives || 3;
     this.state={
       screen:'boot', bootPct:0, reasonIdx:0, typed:'',
-      stageIdx:0, qIdx:0, lives:3, selected:null, answered:false,
+      stageIdx:0, qIdx:0, lives:this.maxLives, selected:null, answered:false,
       noCount:0, noPos:null, yesScale:1, mood:'idle',
-      title:(props && props.dateTitle) || 'Dinner & a sunset walk',
+      title:(props && props.dateTitle) || defaults.dateTitle || 'Dinner & a sunset walk',
       date:`${t.getFullYear()}-${p2(t.getMonth()+1)}-${p2(t.getDate())}`,
-      time:'19:00', dur:'2', loc:'', scheduled:false
+      time:defaults.time || '19:00', dur:defaults.durationHours || '2', loc:'', scheduled:false
     };
     this.containerRef=React.createRef();
     this.ac=null;
-    const C={ k:'#6b4636', w:'#fff7ef', p:'#ff9fb0', e:'#3a2b25', c:'#ffc4cf' };
-    const base=[
-      '...kkk....kkk...',
-      '...kpk....kpk...',
-      '...kpk....kpk...',
-      '...kpk....kpk...',
-      '...kpk....kpk...',
-      '..kwwwwwwwwwwk..',
-      '..kwwwwwwwwwwk..',
-      '..kwwewwwwewwk..',
-      '..kwwewppwewwk..',
-      '..kwcwppppwcwk..',
-      '..kwwwwwwwwwwk..',
-      '...kwwwwwwwwk...',
-      '..kwwwwwwwwwwk..',
-      '..kwwwwwwwwwwk..',
-      '..kwwkwwwwkwwk..',
-      '..kkkkkkkkkkkk..'
-    ];
-    this.bunnyShadow=this.spriteShadow(base,11,C);
-    const heart=['.k.k.','kpppk','kpppk','.kpk.','..k..'];
-    this.heartShadow=this.spriteShadow(heart,5,{ p:'#ff7a93', k:'#e8546b' });
-    this.reasons=[
-      'the way you laugh at your own jokes',
-      'you always steal my hoodies (keep them)',
-      'your hugs fix entire bad days',
-      'you make even ordinary days fun',
-      'my favorite person to do nothing with',
-      'the soft voice you're making sometimes',
-      'you say yes to my dumbest ideas',
-      'you, exactly as you are'
-    ];
+    this.config=cfg;
+    this.defaults=defaults;
+    this.copy=cfg.copy || {};
+    this.sprites=cfg.sprites || {};
+    this.effects=cfg.effects || {};
+    const bunny=this.sprites.bunny || {};
+    const heart=this.sprites.heart || {};
+    this.bunnyShadow=this.spriteShadow(bunny.map || [], bunny.pixelSize || 11, bunny.colors || {});
+    this.heartShadow=this.spriteShadow(heart.map || [], heart.pixelSize || 5, heart.colors || {});
+    this.reasons=this.copy.loveReasons || [];
     this._hold=0;
 
-    const qdata=[
-      { st:0, q:'On which date did we first meet?', opts:['29 / 01 / 2022','03 / 03 / 2022','01 / 02 / 2022','01 / 02 / 1957'], ans:'29 / 01 / 2022' },
-      { st:0, q:'What is my favourite colour?', opts:['Blue','Green','Yellow','Pink'], ans:'Blue' },
-      { st:0, q:'What is my favourite food?', opts:['Pho','Goi Cuon','Bun Bo Hue','Burgers'], ans:'Pho' },
-      { st:1, q:'How many countries have we travelled to together?', opts:['24','12','37','8'], ans:'24' },
-      { st:1, q:'Where did we (oops) pee on each other?', opts:['Punta Cana','Bali','Singapore','Amsterdam'], ans:'Punta Cana' },
-      { st:1, q:'Where did we share our first kiss?', opts:['Tamar Park','Weave','Sunset Peak','Victoria Park'], ans:'Tamar Park' },
-      { st:2, q:'What is my love language?', opts:['Cuddles','Cooking','Surprising gifts','Being annoying'], ans:'Cuddles' },
-      { st:2, q:'Final question \u2014 the only correct answer is...', opts:['I love you, Leon \u2661','Nope','Maybe later','Error 404'], ans:'I love you, Leon \u2661' }
-    ];
-    const stageMeta=[
-      { name:'THE BASICS', blurb:'Easy stuff. You got this. \u2661' },
-      { name:'OUR ADVENTURES', blurb:'Trips, places & questionable decisions.' },
-      { name:'FROM THE HEART', blurb:'The final stretch...' }
-    ];
     const shuffle=(arr)=>{ const a=arr.slice(); for(let i=a.length-1;i>0;i--){ const j=Math.floor(Math.random()*(i+1)); const tmp=a[i]; a[i]=a[j]; a[j]=tmp; } return a; };
-    this.stages=stageMeta.map((m,si)=>({
+    this.stages=(cfg.stages || []).map((m)=>({
       name:m.name, blurb:m.blurb,
-      qs: qdata.filter(d=>d.st===si).map(d=>{ const opts=shuffle(d.opts); return { q:d.q, options:opts, correct:opts.indexOf(d.ans) }; })
+      qs:(m.questions || []).map(d=>{ const opts=shuffle(d.opts || []); return { q:d.q, options:opts, correct:opts.indexOf(d.ans) }; })
     }));
     this.totalStages=this.stages.length;
   }
@@ -354,7 +308,7 @@ class Component extends DCLogic {
       if(this._hold>=34){ this._hold=0; this.setState(s=>({ reasonIdx:(s.reasonIdx+1)%this.reasons.length, typed:'' })); }
     }
   }
-  bootChime(){ [392,523,659,784,1046].forEach((f,i)=>this.tone(f,0.13,'square',0.06,i*0.07)); }
+  bootChime(){ ((this.config.audio && this.config.audio.bootChime) || []).forEach((f,i)=>this.tone(f,0.13,'square',0.06,i*0.07)); }
   startGame=()=>{
     this.ensureAudio();
     if(this.state.bootPct < 100){ this.setState({ bootPct:100 }); this.blip(); return; }
@@ -393,7 +347,7 @@ class Component extends DCLogic {
   }
   blip(){ this.tone(740,0.07,'square',0.05,0); }
   squeak(){ this.tone(300,0.06,'square',0.06,0); this.tone(540,0.06,'square',0.05,0.05); }
-  happy(){ [523,659,784,1046,1318].forEach((f,i)=>this.tone(f,0.2,'square',0.06,i*0.09)); }
+  happy(){ ((this.config.audio && this.config.audio.happy) || []).forEach((f,i)=>this.tone(f,0.2,'square',0.06,i*0.09)); }
   buzz(){ this.tone(196,0.18,'square',0.06,0); this.tone(147,0.22,'square',0.05,0.07); }
 
   set(k){ return (e)=>this.setState({ [k]: e.target.value }); }
@@ -408,7 +362,7 @@ class Component extends DCLogic {
     this.setState(s=>({ noPos:{x,y}, noCount:s.noCount+1, yesScale:Math.min(2.3,s.yesScale+0.13), mood:'sad' }));
   };
 
-  sayYes=()=>{ this.happy(); this.setState({ screen:'stageintro', stageIdx:0, qIdx:0, lives:3, selected:null, answered:false, mood:'idle' }); };
+  sayYes=()=>{ this.happy(); this.setState({ screen:'stageintro', stageIdx:0, qIdx:0, lives:this.maxLives, selected:null, answered:false, mood:'idle' }); };
   beginStage=()=>{ this.blip(); this.setState({ screen:'quiz', qIdx:0, selected:null, answered:false, mood:'idle' }); };
   answer=(i)=>{
     if(this.state.answered) return;
@@ -430,7 +384,7 @@ class Component extends DCLogic {
     if(s.stageIdx < this.stages.length-1){ this.blip(); this.setState({ screen:'stageintro', stageIdx:s.stageIdx+1, qIdx:0, mood:'idle' }); }
     else { this.happy(); this.setState({ screen:'win', mood:'happy' }); }
   };
-  retryQuiz=()=>{ this.blip(); this.setState({ screen:'stageintro', stageIdx:0, qIdx:0, lives:3, selected:null, answered:false, mood:'idle' }); };
+  retryQuiz=()=>{ this.blip(); this.setState({ screen:'stageintro', stageIdx:0, qIdx:0, lives:this.maxLives, selected:null, answered:false, mood:'idle' }); };
 
   pad(n){ return String(n).padStart(2,'0'); }
   addCal=()=>{
@@ -452,28 +406,15 @@ class Component extends DCLogic {
 
   renderVals(){
     const s=this.state;
-    const partner=(this.props && this.props.partnerName) || 'Uyen Ni';
-    const qs=[
-      `Do you still love me, ${partner}?`,
-      'Wait... are you sure?',
-      'Hmm, think about it again!',
-      'The button does not want this either!',
-      '"Yes" is right there, you know  \u2192',
-      'You will never catch "No" anyway!',
-      'Pretty please? Just say yes \u2661',
-      'Leon is getting nervous down here...',
-      'Okay now you are just teasing him \u2661'
-    ];
+    const partner=(this.props && this.props.partnerName) || this.defaults.partnerName || 'Uyen Ni';
+    const sender=(this.props && this.props.senderName) || this.defaults.senderName || 'Leon';
+    const qs=(this.copy.askPrompts || []).map((t)=>t.replace('{partner}',partner).replace('{sender}',sender));
     const mood=s.mood;
-    const mouths={
-      idle:['.....','.....','.kkk.'],
-      happy:['k...k','k...k','.kkk.'],
-      sad:['.kkk.','k...k','k...k']
-    };
-    const mouthShadow=this.spriteShadow(mouths[mood]||mouths.idle,7,{ k: mood==='happy'?'#d65a78':'#6b4636' });
+    const mouths=this.sprites.mouths || {};
+    const mouthShadow=this.spriteShadow(mouths[mood]||mouths.idle||[],7,{ k: mood==='happy'?'#d65a78':'#6b4636' });
     const anims={ idle:'bob 2.4s ease-in-out infinite', sad:'tremble .35s ease-in-out infinite', happy:'hop .95s ease-in-out infinite' };
     if(!this._confetti){
-      const cols=['#ff7a5c','#ffd6a5','#ff9fb0','#ffe08a','#ff5d73','#9bd9f2'];
+      const cols=this.effects.confettiColors || ['#ff7a5c'];
       const a=[];
       for(let i=0;i<28;i++){
         a.push({ left:+(Math.random()*100).toFixed(1), delay:+(Math.random()*2.2).toFixed(2), dur:+(2.6+Math.random()*2.2).toFixed(2), color:cols[i%cols.length], size:8+Math.floor(Math.random()*9) });
@@ -492,10 +433,11 @@ class Component extends DCLogic {
         }
         return arr;
       };
+      const skyColors=this.effects.skyColors || {};
       this._sky={
-        far: mk(2600,13,24,34,96,['#edbcb1','#e7b3a8','#f0c2b6','#e3ada3'],false),
-        mid: mk(2600,15,29,64,156,['#b38494','#a5788a','#bb8b9b','#ab7e90'],false),
-        near: mk(2600,18,32,78,176,['#4a3346','#3f2c3b','#553c4f','#473041'],true)
+        far: mk(2600,13,24,34,96,skyColors.far || ['#edbcb1'],false),
+        mid: mk(2600,15,29,64,156,skyColors.mid || ['#b38494'],false),
+        near: mk(2600,18,32,78,176,skyColors.near || ['#4a3346'],true)
       };
     }
     const _stage=this.stages[s.stageIdx];
@@ -512,7 +454,7 @@ class Component extends DCLogic {
         return { text:t, letter:'ABCD'[i], pick:()=>this.answer(i), bg, col, bd, sh };
       });
     }
-    const _lives=[0,1,2].map(i=>({ c: i<s.lives?'#ff5d73':'#caa9b0' }));
+    const _lives=Array.from({ length:this.maxLives },(_,i)=>({ c: i<s.lives?'#ff5d73':'#caa9b0' }));
     return {
       isBoot:s.screen==='boot', bootPct:s.bootPct, bootReady:s.bootPct>=100, notBootReady:s.bootPct<100,
       startGame:this.startGame, reasonText:s.typed,
@@ -523,7 +465,7 @@ class Component extends DCLogic {
       qNumber:s.qIdx+1, qTotalInStage:_stage?_stage.qs.length:0,
       lastStage:s.stageIdx>=this.totalStages-1, nextLabel:(s.stageIdx>=this.totalStages-1?'CLAIM YOUR DATE':'NEXT STAGE'),
       beginStage:this.beginStage, nextStage:this.nextStage, retryQuiz:this.retryQuiz,
-      question:qs[Math.min(s.noCount,qs.length-1)],
+      question:qs[Math.min(s.noCount,qs.length-1)] || `Do you still love me, ${partner}?`,
       noEscaped:!!s.noPos, notEscaped:!s.noPos,
       noLeft:s.noPos?Math.round(s.noPos.x):0, noTop:s.noPos?Math.round(s.noPos.y):0,
       yesScale:s.yesScale, moodSad:mood==='sad',
