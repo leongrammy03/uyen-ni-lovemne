@@ -6,10 +6,50 @@ window.LOVE_GAME_CONFIG = {
     partnerTimezone: 'America/Toronto',
     senderTimezone: 'Europe/Amsterdam',
     dateTitle: 'Dinner & a sunset walk',
+    completedDateIdeasKey: 'uyen-ni-completed-date-ideas',
     time: '19:00',
     durationHours: '2',
     lives: 3
   },
+
+  dateIdeas: [
+    {
+      id: 'baking',
+      label: 'Bake something together',
+      title: 'Long-distance baking date',
+      location: 'video call + matching ingredients'
+    },
+    {
+      id: 'movie',
+      label: 'Movie sync night',
+      title: 'Movie sync night',
+      location: 'Netflix / Disney+ / wherever the snacks are'
+    },
+    {
+      id: 'dinner',
+      label: 'Cook the same dinner',
+      title: 'Cook the same dinner date',
+      location: 'two kitchens, one recipe'
+    },
+    {
+      id: 'game',
+      label: 'Game night',
+      title: 'Long-distance game night',
+      location: 'Discord + cozy chaos'
+    },
+    {
+      id: 'tea',
+      label: 'Sleepy tea call',
+      title: 'Sleepy tea call',
+      location: 'video call + tea'
+    },
+    {
+      id: 'airport',
+      label: 'Plan the airport hug',
+      title: 'Future airport hug planning',
+      location: 'AMS-YUL dream department'
+    }
+  ],
 
   copy: {
     askPrompts: [
