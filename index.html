@@ -161,6 +161,24 @@
         <div style="font-family:Silkscreen,monospace;font-size:15px;color:#ffe08a;line-height:1.6;min-height:48px;text-align:left;">{{ reasonText }}<span style="animation:blink .8s steps(1) infinite;color:#ff9fb0;">_</span></div>
       </div>
 
+      <div style="width:100%;background:#241531;border:4px solid #6b4636;box-shadow:inset 3px 3px 0 #3a2348,inset -3px -3px 0 #160d20;padding:15px 16px;display:flex;flex-direction:column;gap:12px;box-sizing:border-box;">
+        <div style="display:flex;align-items:center;justify-content:space-between;gap:10px;flex-wrap:wrap;">
+          <div style="font-family:Silkscreen,monospace;font-size:11px;color:#9bd9f2;letter-spacing:2px;">LONG DISTANCE LINK</div>
+          <div style="font-family:'Press Start 2P',monospace;font-size:9px;color:#7be0a0;text-shadow:0 0 8px rgba(123,224,160,.55);animation:blink 1.4s steps(1) infinite;">ONLINE</div>
+        </div>
+        <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:10px;">
+          <div style="background:#120b1a;border:3px solid #4a2d52;box-shadow:inset 2px 2px 0 #33203e;padding:12px;box-sizing:border-box;">
+            <div style="font-family:Silkscreen,monospace;font-size:10px;color:#ff9fb0;letter-spacing:1px;margin-bottom:7px;">{{ partnerClockLabel }}</div>
+            <div style="font-family:'Press Start 2P',monospace;font-size:14px;line-height:1.5;color:#ffe08a;text-shadow:0 0 8px rgba(255,224,138,.35);">{{ partnerClock }}</div>
+          </div>
+          <div style="background:#120b1a;border:3px solid #4a2d52;box-shadow:inset 2px 2px 0 #33203e;padding:12px;box-sizing:border-box;">
+            <div style="font-family:Silkscreen,monospace;font-size:10px;color:#ff9fb0;letter-spacing:1px;margin-bottom:7px;">{{ senderClockLabel }}</div>
+            <div style="font-family:'Press Start 2P',monospace;font-size:14px;line-height:1.5;color:#ffe08a;text-shadow:0 0 8px rgba(255,224,138,.35);">{{ senderClock }}</div>
+          </div>
+        </div>
+        <div style="font-family:Silkscreen,monospace;font-size:13px;color:#e6c6e0;text-align:center;line-height:1.5;">{{ distanceClockText }}</div>
+      </div>
+
       <div style="width:100%;background:#fff3e6;border:4px solid #6b4636;box-shadow:inset 3px 3px 0 #fffdfb,inset -3px -3px 0 #efd6c2;padding:20px;display:flex;flex-direction:column;gap:14px;box-sizing:border-box;">
         <label style="display:flex;flex-direction:column;gap:6px;font-family:Silkscreen,monospace;font-size:12px;color:#a05a3c;letter-spacing:1px;">WHAT ARE WE DOING?
           <input value="{{ title }}" onChange="{{ setTitle }}" style="font-family:Silkscreen,monospace;font-size:15px;color:#5b3a2e;background:#fff;border:3px solid #6b4636;box-shadow:inset 2px 2px 0 #ead9c8;padding:10px 12px;box-sizing:border-box;width:100%;" />
@@ -260,7 +278,7 @@ class Component extends DCLogic {
     this.state={
       screen:'boot', bootPct:0, reasonIdx:0, typed:'',
       stageIdx:0, qIdx:0, lives:this.maxLives, selected:null, answered:false,
-      noCount:0, noPos:null, yesScale:1, mood:'idle',
+      noCount:0, noPos:null, yesScale:1, mood:'idle', clockTick:0,
       title:(props && props.dateTitle) || defaults.dateTitle || 'Dinner & a sunset walk',
       date:`${t.getFullYear()}-${p2(t.getMonth()+1)}-${p2(t.getDate())}`,
       time:defaults.time || '19:00', dur:defaults.durationHours || '2', loc:'', scheduled:false
@@ -295,8 +313,9 @@ class Component extends DCLogic {
       });
     },110);
     this._type=setInterval(()=>this.tick(),58);
+    this._clock=setInterval(()=>this.setState(s=>({ clockTick:s.clockTick+1 })),30000);
   }
-  componentWillUnmount(){ clearInterval(this._boot); clearInterval(this._type); clearTimeout(this._advTimer); }
+  componentWillUnmount(){ clearInterval(this._boot); clearInterval(this._type); clearInterval(this._clock); clearTimeout(this._advTimer); }
   tick(){
     if(this.state.screen!=='win') return;
     const full=this.reasons[this.state.reasonIdx] || '';
@@ -387,6 +406,13 @@ class Component extends DCLogic {
   retryQuiz=()=>{ this.blip(); this.setState({ screen:'stageintro', stageIdx:0, qIdx:0, lives:this.maxLives, selected:null, answered:false, mood:'idle' }); };
 
   pad(n){ return String(n).padStart(2,'0'); }
+  formatClock(tz){
+    try{
+      return new Intl.DateTimeFormat('en-US',{ timeZone:tz, weekday:'short', hour:'numeric', minute:'2-digit', hour12:true, timeZoneName:'short' }).format(new Date());
+    }catch(e){
+      return new Intl.DateTimeFormat('en-US',{ weekday:'short', hour:'numeric', minute:'2-digit', hour12:true }).format(new Date());
+    }
+  }
   addCal=()=>{
     this.blip();
     const {title,date,time,dur,loc}=this.state;
@@ -410,6 +436,8 @@ class Component extends DCLogic {
     const s=this.state;
     const partner=(this.props && this.props.partnerName) || this.defaults.partnerName || 'Uyen Ni';
     const sender=(this.props && this.props.senderName) || this.defaults.senderName || 'Leon';
+    const partnerTz=this.defaults.partnerTimezone || 'America/Toronto';
+    const senderTz=this.defaults.senderTimezone || Intl.DateTimeFormat().resolvedOptions().timeZone || 'UTC';
     const qs=(this.copy.askPrompts || []).map((t)=>t.replace('{partner}',partner).replace('{sender}',sender));
     const mood=s.mood;
     const mouths=this.sprites.mouths || {};
@@ -464,6 +492,11 @@ class Component extends DCLogic {
       isStageIntro:s.screen==='stageintro', isQuiz:s.screen==='quiz', isStageClear:s.screen==='stageclear', isGameOver:s.screen==='gameover',
       stageName:_stage?_stage.name:'', stageBlurb:_stage?_stage.blurb:'', stageNumber:s.stageIdx+1, totalStages:this.totalStages,
       quizQ:_q?_q.q:'', optionVMs:_optionVMs, lives:_lives, livesLeft:s.lives,
+      partnerClockLabel:partner.toUpperCase()+' TIME',
+      senderClockLabel:sender.toUpperCase()+' TIME',
+      partnerClock:this.formatClock(partnerTz),
+      senderClock:this.formatClock(senderTz),
+      distanceClockText:'same moon, different clocks. link stable. hearts synced.',
       qNumber:s.qIdx+1, qTotalInStage:_stage?_stage.qs.length:0,
       lastStage:s.stageIdx>=this.totalStages-1, nextLabel:(s.stageIdx>=this.totalStages-1?'CLAIM YOUR DATE':'NEXT STAGE'),
       beginStage:this.beginStage, nextStage:this.nextStage, retryQuiz:this.retryQuiz,

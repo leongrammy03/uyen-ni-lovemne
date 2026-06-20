@@ -3,6 +3,8 @@ window.LOVE_GAME_CONFIG = {
     partnerName: 'Uyen Ni',
     senderName: 'Leon',
     senderEmail: 'leongramminger@gmail.com',
+    partnerTimezone: 'America/Toronto',
+    senderTimezone: 'Europe/Amsterdam',
     dateTitle: 'Dinner & a sunset walk',
     time: '19:00',
     durationHours: '2',
