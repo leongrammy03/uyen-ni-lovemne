@@ -1,0 +1,542 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&family=Silkscreen:wght@400;700&display=swap" rel="stylesheet">
+<style>
+  html,body{margin:0;padding:0;background:#ff9270;}
+  *{image-rendering:pixelated;}
+  @keyframes bob{0%,100%{transform:translateY(0)}50%{transform:translateY(-9px)}}
+  @keyframes hop{0%,100%{transform:translateY(0)}30%{transform:translateY(-26px)}50%{transform:translateY(0)}55%{transform:translateY(-5px)}62%{transform:translateY(0)}}
+  @keyframes tremble{0%,100%{transform:translate(0,0) rotate(0)}20%{transform:translate(-3px,1px) rotate(-2.5deg)}40%{transform:translate(3px,-1px) rotate(2.5deg)}60%{transform:translate(-2px,1px) rotate(-1.5deg)}80%{transform:translate(2px,0) rotate(1.5deg)}}
+  @keyframes drip{0%{transform:translateY(0);opacity:0}15%{opacity:1}100%{transform:translateY(34px);opacity:0}}
+  @keyframes floatUp{0%{transform:translateY(12px) scale(.85);opacity:0}20%{opacity:1}100%{transform:translateY(-150px) scale(.5);opacity:0}}
+  @keyframes fall{0%{transform:translateY(-30px) rotate(0)}100%{transform:translateY(108vh) rotate(540deg)}}
+  @keyframes floatBg{0%,100%{transform:translateY(0)}50%{transform:translateY(-12px)}}
+  @keyframes glowPulse{0%,100%{box-shadow:inset 3px 3px 0 #ffb09c,inset -3px -3px 0 #d8472f,5px 5px 0 #6b4636,0 0 0 0 rgba(255,93,115,.5)}50%{box-shadow:inset 3px 3px 0 #ffb09c,inset -3px -3px 0 #d8472f,5px 5px 0 #6b4636,0 0 0 10px rgba(255,93,115,0)}}
+  @keyframes blink{0%,48%{opacity:1}50%,100%{opacity:.25}}
+  @keyframes twinkle{0%,100%{opacity:1}45%{opacity:.12}}
+</style>
+</helmet>
+
+<div style="position:relative;min-height:100vh;width:100%;background:linear-gradient(#ffd9a8 0%,#ffb184 44%,#ff9270 72%,#ff7a5c 100%);display:flex;flex-direction:column;font-family:Silkscreen,monospace;overflow-x:hidden;">
+
+  <div style="position:fixed;inset:0;overflow:hidden;pointer-events:none;z-index:0;">
+    <div style="position:absolute;left:50%;top:33%;width:210px;height:210px;transform:translate(-50%,-50%);border-radius:50%;background:radial-gradient(circle,#ffe6a3 0%,#ffce7e 52%,rgba(255,206,126,0) 72%);"></div>
+    <div style="position:absolute;top:11%;left:8%;width:96px;height:30px;background:#fff;border-radius:18px;box-shadow:28px -14px 0 -4px #fff,-22px -6px 0 -6px #fff;opacity:.8;animation:floatBg 8s ease-in-out infinite;"></div>
+    <div style="position:absolute;top:21%;right:10%;width:78px;height:26px;background:#fff;border-radius:16px;box-shadow:20px -12px 0 -4px #fff,-18px -5px 0 -6px #fff;opacity:.7;animation:floatBg 10s ease-in-out infinite;"></div>
+    <div style="position:absolute;left:16%;top:28%;width:5px;height:5px;box-shadow:{{ heartShadow }};opacity:.5;animation:floatBg 5s ease-in-out infinite;"></div>
+    <div style="position:absolute;left:80%;top:40%;width:5px;height:5px;box-shadow:{{ heartShadow }};opacity:.4;animation:floatBg 6.5s ease-in-out .6s infinite;"></div>
+    <div style="position:absolute;left:88%;top:15%;width:5px;height:5px;box-shadow:{{ heartShadow }};opacity:.4;animation:floatBg 6s ease-in-out 1.2s infinite;"></div>
+
+  </div>
+
+  <sc-if value="{{ isBoot }}" hint-placeholder-val="{{ true }}">
+    <div onClick="{{ startGame }}" style="position:fixed;inset:0;z-index:40;background:radial-gradient(circle at 50% 38%, #34203c 0%, #14101c 68%, #0b0810 100%);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:22px;cursor:pointer;padding:24px;box-sizing:border-box;text-align:center;">
+      <div style="transform:scale(.78);">
+        <div style="position:relative;width:176px;height:176px;animation:{{ bunnyAnim }};">
+          <div style="position:absolute;left:0;top:0;width:11px;height:11px;box-shadow:{{ bunnyShadow }};"></div>
+          <div style="position:absolute;left:70px;top:119px;width:7px;height:7px;box-shadow:{{ mouthShadow }};"></div>
+        </div>
+      </div>
+      <div style="font-family:'Press Start 2P',monospace;font-size:26px;line-height:1.5;color:#ff5d73;text-shadow:0 0 12px rgba(255,93,115,.6),3px 3px 0 #6b1f2e;letter-spacing:2px;">DO YOU STILL<br>LOVE ME?</div>
+      <div style="font-family:Silkscreen,monospace;font-size:13px;color:#9bd9f2;letter-spacing:2px;">A LEON-CO PRODUCTION</div>
+      <sc-if value="{{ notBootReady }}" hint-placeholder-val="{{ true }}">
+        <div style="display:flex;flex-direction:column;align-items:center;gap:10px;margin-top:6px;">
+          <div style="font-family:'Press Start 2P',monospace;font-size:12px;color:#ffe08a;">LOADING {{ bootPct }}%</div>
+          <div style="width:280px;max-width:80vw;height:20px;background:#0b0810;border:3px solid #ff9fb0;box-shadow:0 0 8px rgba(255,159,176,.4);padding:2px;box-sizing:border-box;">
+            <div style="width:{{ bootPct }}%;height:100%;background:repeating-linear-gradient(90deg,#ff5d73 0 8px,#ff9fb0 8px 12px);transition:width .1s linear;"></div>
+          </div>
+        </div>
+      </sc-if>
+      <sc-if value="{{ bootReady }}" hint-placeholder-val="{{ false }}">
+        <div style="display:flex;flex-direction:column;align-items:center;gap:14px;margin-top:6px;">
+          <div style="font-family:'Press Start 2P',monospace;font-size:18px;color:#fff;text-shadow:0 0 10px rgba(255,255,255,.5);animation:blink .7s steps(1) infinite;">PUSH START</div>
+          <div style="font-family:Silkscreen,monospace;font-size:13px;color:#ff9fb0;letter-spacing:1px;">INSERT &#9829; COIN &nbsp;&bull;&nbsp; 1 CREDIT</div>
+        </div>
+      </sc-if>
+      <div style="position:absolute;bottom:18px;left:0;right:0;font-family:Silkscreen,monospace;font-size:11px;color:#6a5a72;letter-spacing:1px;">&copy; 1992 LEON-CO &nbsp; ALL HEARTS RESERVED</div>
+    </div>
+  </sc-if>
+
+  <sc-if value="{{ isWin }}" hint-placeholder-val="{{ false }}">
+    <div style="position:fixed;inset:0;overflow:hidden;pointer-events:none;z-index:1;">
+      <sc-for list="{{ confetti }}" as="c" hint-placeholder-count="0">
+        <div style="position:absolute;top:-20px;left:{{ c.left }}%;width:{{ c.size }}px;height:{{ c.size }}px;background:{{ c.color }};animation:fall {{ c.dur }}s linear {{ c.delay }}s infinite;"></div>
+      </sc-for>
+    </div>
+  </sc-if>
+
+  <div style="flex:1 1 auto;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:30px 16px;box-sizing:border-box;position:relative;z-index:2;">
+  <sc-if value="{{ isAsk }}" hint-placeholder-val="{{ true }}">
+    <div style="position:relative;z-index:2;width:min(560px,92vw);background:#fff8f0;border:4px solid #6b4636;box-shadow:inset 4px 4px 0 #fffdfb,inset -4px -4px 0 #f0d8c4,10px 10px 0 rgba(91,58,46,.22);padding:34px 26px 26px;display:flex;flex-direction:column;align-items:center;gap:16px;box-sizing:border-box;">
+
+      <div style="position:relative;width:176px;height:176px;animation:{{ bunnyAnim }};">
+        <div style="position:absolute;left:0;top:0;width:11px;height:11px;box-shadow:{{ bunnyShadow }};"></div>
+        <div style="position:absolute;left:70px;top:119px;width:7px;height:7px;box-shadow:{{ mouthShadow }};"></div>
+        <sc-if value="{{ moodSad }}" hint-placeholder-val="{{ false }}">
+          <div style="position:absolute;left:54px;top:96px;width:8px;height:12px;background:#9bd9f2;border:2px solid #5aa9d6;box-sizing:border-box;animation:drip 1.1s ease-in infinite;"></div>
+          <div style="position:absolute;left:112px;top:96px;width:8px;height:12px;background:#9bd9f2;border:2px solid #5aa9d6;box-sizing:border-box;animation:drip 1.1s ease-in .45s infinite;"></div>
+        </sc-if>
+      </div>
+
+      <div style="font-family:'Press Start 2P',monospace;font-size:17px;line-height:1.9;color:#6b4636;text-align:center;text-shadow:2px 2px 0 #ffd9c2;max-width:450px;text-wrap:balance;">{{ question }}</div>
+
+      <div ref="{{ containerRef }}" style="position:relative;width:100%;min-height:210px;display:flex;align-items:center;justify-content:center;margin-top:4px;">
+        <div style="display:flex;gap:22px;align-items:center;justify-content:center;flex-wrap:wrap;">
+          <button onClick="{{ sayYes }}" onMouseEnter="{{ blipH }}" style="transform:scale({{ yesScale }});transform-origin:center;font-family:'Press Start 2P',monospace;font-size:15px;color:#fff8f0;background:#ff6f59;border:4px solid #6b4636;box-shadow:inset 3px 3px 0 #ffb09c,inset -3px -3px 0 #d8472f,5px 5px 0 #6b4636;padding:16px 30px;cursor:pointer;transition:transform .12s;animation:glowPulse 1.8s ease-in-out infinite;">YES &#9825;</button>
+          <sc-if value="{{ notEscaped }}" hint-placeholder-val="{{ true }}">
+            <button onClick="{{ dodge }}" onMouseEnter="{{ dodge }}" onPointerDown="{{ dodge }}" style="font-family:'Press Start 2P',monospace;font-size:13px;color:#6b4636;background:#cdbcae;border:4px solid #6b4636;box-shadow:inset 3px 3px 0 #e6d9cd,inset -3px -3px 0 #a8917f,4px 4px 0 #6b4636;padding:14px 22px;cursor:pointer;">no</button>
+          </sc-if>
+        </div>
+        <sc-if value="{{ noEscaped }}" hint-placeholder-val="{{ false }}">
+          <button onClick="{{ dodge }}" onMouseEnter="{{ dodge }}" onPointerDown="{{ dodge }}" style="position:absolute;left:{{ noLeft }}px;top:{{ noTop }}px;transition:left .13s ease,top .13s ease;font-family:'Press Start 2P',monospace;font-size:13px;color:#6b4636;background:#cdbcae;border:4px solid #6b4636;box-shadow:inset 3px 3px 0 #e6d9cd,inset -3px -3px 0 #a8917f,4px 4px 0 #6b4636;padding:14px 22px;cursor:pointer;">no</button>
+        </sc-if>
+      </div>
+    </div>
+  </sc-if>
+
+  <sc-if value="{{ isStageIntro }}" hint-placeholder-val="{{ false }}">
+    <div style="position:relative;z-index:2;width:min(560px,92vw);background:#241531;border:4px solid #4a2d52;box-shadow:inset 3px 3px 0 #3a2348,inset -3px -3px 0 #160d20,10px 10px 0 rgba(20,10,28,.4);padding:36px 28px;display:flex;flex-direction:column;align-items:center;gap:18px;box-sizing:border-box;">
+      <div style="font-family:'Press Start 2P',monospace;font-size:13px;color:#9bd9f2;letter-spacing:2px;">STAGE {{ stageNumber }} / {{ totalStages }}</div>
+      <div style="font-family:'Press Start 2P',monospace;font-size:21px;color:#ffd98a;text-shadow:0 0 10px rgba(255,217,138,.5),3px 3px 0 #6b4a1e;text-align:center;line-height:1.5;">{{ stageName }}</div>
+      <div style="transform:scale(.62);margin:-14px 0;"><div style="position:relative;width:176px;height:176px;animation:{{ bunnyAnim }};"><div style="position:absolute;left:0;top:0;width:11px;height:11px;box-shadow:{{ bunnyShadow }};"></div><div style="position:absolute;left:70px;top:119px;width:7px;height:7px;box-shadow:{{ mouthShadow }};"></div></div></div>
+      <div style="font-family:Silkscreen,monospace;font-size:15px;color:#e6c6e0;text-align:center;">{{ stageBlurb }}</div>
+      <button onClick="{{ beginStage }}" onMouseEnter="{{ blipH }}" style="font-family:'Press Start 2P',monospace;font-size:13px;color:#fff8f0;background:#3f8f5b;border:4px solid #2c5e3d;box-shadow:inset 3px 3px 0 #6fbf86,inset -3px -3px 0 #2c5e3d,4px 4px 0 #244c33;padding:15px 22px;cursor:pointer;">START &#9654;</button>
+    </div>
+  </sc-if>
+
+  <sc-if value="{{ isQuiz }}" hint-placeholder-val="{{ false }}">
+    <div style="position:relative;z-index:2;width:min(560px,92vw);background:#fff8f0;border:4px solid #6b4636;box-shadow:inset 4px 4px 0 #fffdfb,inset -4px -4px 0 #f0d8c4,10px 10px 0 rgba(91,58,46,.22);padding:20px 24px 26px;display:flex;flex-direction:column;align-items:center;gap:12px;box-sizing:border-box;">
+      <div style="width:100%;display:flex;justify-content:space-between;align-items:center;font-family:Silkscreen,monospace;font-size:12px;color:#8a5a44;letter-spacing:1px;">
+        <span>{{ stageName }} &middot; Q{{ qNumber }}/{{ qTotalInStage }}</span>
+        <span style="display:flex;gap:4px;"><sc-for list="{{ lives }}" as="l" hint-placeholder-count="0"><span style="color:{{ l.c }};font-size:17px;line-height:1;">&#9829;</span></sc-for></span>
+      </div>
+      <div style="transform:scale(.56);margin:-30px 0 -26px;"><div style="position:relative;width:176px;height:176px;animation:{{ bunnyAnim }};"><div style="position:absolute;left:0;top:0;width:11px;height:11px;box-shadow:{{ bunnyShadow }};"></div><div style="position:absolute;left:70px;top:119px;width:7px;height:7px;box-shadow:{{ mouthShadow }};"></div></div></div>
+      <div style="font-family:'Press Start 2P',monospace;font-size:14px;line-height:1.8;color:#6b4636;text-align:center;text-shadow:2px 2px 0 #ffd9c2;min-height:52px;">{{ quizQ }}</div>
+      <div style="width:100%;display:flex;flex-direction:column;gap:11px;">
+        <sc-for list="{{ optionVMs }}" as="o" hint-placeholder-count="0">
+          <button onClick="{{ o.pick }}" style="display:flex;align-items:center;gap:12px;width:100%;text-align:left;font-family:Silkscreen,monospace;font-size:16px;color:{{ o.col }};background:{{ o.bg }};border:3px solid {{ o.bd }};box-shadow:{{ o.sh }};padding:12px 14px;cursor:pointer;box-sizing:border-box;transition:background .1s;">
+            <span style="font-family:'Press Start 2P',monospace;font-size:11px;opacity:.6;">{{ o.letter }}</span>{{ o.text }}
+          </button>
+        </sc-for>
+      </div>
+    </div>
+  </sc-if>
+
+  <sc-if value="{{ isStageClear }}" hint-placeholder-val="{{ false }}">
+    <div style="position:relative;z-index:2;width:min(560px,92vw);background:#241531;border:4px solid #4a2d52;box-shadow:inset 3px 3px 0 #3a2348,inset -3px -3px 0 #160d20,10px 10px 0 rgba(20,10,28,.4);padding:36px 28px;display:flex;flex-direction:column;align-items:center;gap:18px;box-sizing:border-box;">
+      <div style="font-family:'Press Start 2P',monospace;font-size:23px;color:#7be0a0;text-shadow:0 0 12px rgba(123,224,160,.6),3px 3px 0 #1e5a36;text-align:center;">STAGE CLEAR!</div>
+      <div style="transform:scale(.66);margin:-12px 0;"><div style="position:relative;width:176px;height:176px;animation:{{ bunnyAnim }};"><div style="position:absolute;left:0;top:0;width:11px;height:11px;box-shadow:{{ bunnyShadow }};"></div><div style="position:absolute;left:70px;top:119px;width:7px;height:7px;box-shadow:{{ mouthShadow }};"></div></div></div>
+      <div style="font-family:Silkscreen,monospace;font-size:15px;color:#e6c6e0;display:flex;align-items:center;"><span style="display:flex;gap:4px;margin-right:8px;"><sc-for list="{{ lives }}" as="l" hint-placeholder-count="0"><span style="color:{{ l.c }};font-size:17px;">&#9829;</span></sc-for></span>remaining</div>
+      <button onClick="{{ nextStage }}" onMouseEnter="{{ blipH }}" style="font-family:'Press Start 2P',monospace;font-size:13px;color:#fff8f0;background:#3f8f5b;border:4px solid #2c5e3d;box-shadow:inset 3px 3px 0 #6fbf86,inset -3px -3px 0 #2c5e3d,4px 4px 0 #244c33;padding:15px 22px;cursor:pointer;">{{ nextLabel }} &#9654;</button>
+    </div>
+  </sc-if>
+
+  <sc-if value="{{ isGameOver }}" hint-placeholder-val="{{ false }}">
+    <div style="position:relative;z-index:2;width:min(560px,92vw);background:#241531;border:4px solid #4a2d52;box-shadow:inset 3px 3px 0 #3a2348,inset -3px -3px 0 #160d20,10px 10px 0 rgba(20,10,28,.4);padding:36px 28px;display:flex;flex-direction:column;align-items:center;gap:18px;box-sizing:border-box;">
+      <div style="font-family:'Press Start 2P',monospace;font-size:23px;color:#ff5d73;text-shadow:0 0 12px rgba(255,93,115,.6),3px 3px 0 #6b1f2e;">GAME OVER</div>
+      <div style="transform:scale(.66);margin:-12px 0;"><div style="position:relative;width:176px;height:176px;animation:{{ bunnyAnim }};"><div style="position:absolute;left:0;top:0;width:11px;height:11px;box-shadow:{{ bunnyShadow }};"></div><div style="position:absolute;left:70px;top:119px;width:7px;height:7px;box-shadow:{{ mouthShadow }};"></div></div></div>
+      <div style="font-family:Silkscreen,monospace;font-size:15px;color:#e6c6e0;text-align:center;line-height:1.6;">Out of hearts!<br>But you always get a continue with me. &#9825;</div>
+      <button onClick="{{ retryQuiz }}" onMouseEnter="{{ blipH }}" style="font-family:'Press Start 2P',monospace;font-size:13px;color:#fff8f0;background:#ff6f59;border:4px solid #6b1f2e;box-shadow:inset 3px 3px 0 #ffb09c,inset -3px -3px 0 #d8472f,4px 4px 0 #6b1f2e;padding:15px 22px;cursor:pointer;">INSERT &#9829; COIN</button>
+    </div>
+  </sc-if>
+
+  <sc-if value="{{ isWin }}" hint-placeholder-val="{{ false }}">
+    <div style="position:relative;z-index:2;width:min(580px,92vw);background:#fff8f0;border:4px solid #6b4636;box-shadow:inset 4px 4px 0 #fffdfb,inset -4px -4px 0 #f0d8c4,10px 10px 0 rgba(91,58,46,.22);padding:34px 26px 28px;display:flex;flex-direction:column;align-items:center;gap:16px;box-sizing:border-box;">
+
+      <div style="position:relative;width:176px;height:200px;display:flex;justify-content:center;align-items:flex-end;">
+        <div style="position:absolute;left:20px;top:6px;width:5px;height:5px;box-shadow:{{ heartShadow }};animation:floatUp 2.4s ease-in infinite;"></div>
+        <div style="position:absolute;left:78px;top:0;width:5px;height:5px;box-shadow:{{ heartShadow }};animation:floatUp 2.8s ease-in .5s infinite;"></div>
+        <div style="position:absolute;left:140px;top:8px;width:5px;height:5px;box-shadow:{{ heartShadow }};animation:floatUp 2.6s ease-in .9s infinite;"></div>
+        <div style="position:absolute;left:48px;top:2px;width:5px;height:5px;box-shadow:{{ heartShadow }};animation:floatUp 3s ease-in 1.3s infinite;"></div>
+        <div style="position:absolute;left:112px;top:4px;width:5px;height:5px;box-shadow:{{ heartShadow }};animation:floatUp 2.5s ease-in .2s infinite;"></div>
+        <div style="position:relative;width:176px;height:176px;animation:{{ bunnyAnim }};">
+          <div style="position:absolute;left:0;top:0;width:11px;height:11px;box-shadow:{{ bunnyShadow }};"></div>
+          <div style="position:absolute;left:70px;top:119px;width:7px;height:7px;box-shadow:{{ mouthShadow }};"></div>
+        </div>
+      </div>
+
+      <div style="font-family:'Press Start 2P',monospace;font-size:22px;color:#ff5d73;text-shadow:3px 3px 0 #6b4636;text-align:center;letter-spacing:1px;">YOU WIN! &#9825;</div>
+      <div style="font-family:Silkscreen,monospace;font-size:15px;color:#6b4636;text-align:center;line-height:1.7;">You still deserve my heart &mdash;<br>time to schedule a date with me :)</div>
+
+      <div style="width:100%;background:#2a1830;border:4px solid #6b4636;box-shadow:inset 3px 3px 0 #3d2747,inset -3px -3px 0 #1c1226;padding:16px 18px;display:flex;flex-direction:column;gap:8px;box-sizing:border-box;">
+        <div style="font-family:Silkscreen,monospace;font-size:11px;color:#ff9fb0;letter-spacing:2px;">&#9829; WHY I LOVE YOU</div>
+        <div style="font-family:Silkscreen,monospace;font-size:15px;color:#ffe08a;line-height:1.6;min-height:48px;text-align:left;">{{ reasonText }}<span style="animation:blink .8s steps(1) infinite;color:#ff9fb0;">_</span></div>
+      </div>
+
+      <div style="width:100%;background:#fff3e6;border:4px solid #6b4636;box-shadow:inset 3px 3px 0 #fffdfb,inset -3px -3px 0 #efd6c2;padding:20px;display:flex;flex-direction:column;gap:14px;box-sizing:border-box;">
+        <label style="display:flex;flex-direction:column;gap:6px;font-family:Silkscreen,monospace;font-size:12px;color:#a05a3c;letter-spacing:1px;">WHAT ARE WE DOING?
+          <input value="{{ title }}" onChange="{{ setTitle }}" style="font-family:Silkscreen,monospace;font-size:15px;color:#5b3a2e;background:#fff;border:3px solid #6b4636;box-shadow:inset 2px 2px 0 #ead9c8;padding:10px 12px;box-sizing:border-box;width:100%;" />
+        </label>
+        <div style="display:flex;gap:12px;flex-wrap:wrap;">
+          <label style="flex:1 1 130px;display:flex;flex-direction:column;gap:6px;font-family:Silkscreen,monospace;font-size:12px;color:#a05a3c;letter-spacing:1px;">WHEN
+            <input type="date" value="{{ date }}" onChange="{{ setDate }}" style="font-family:Silkscreen,monospace;font-size:15px;color:#5b3a2e;background:#fff;border:3px solid #6b4636;box-shadow:inset 2px 2px 0 #ead9c8;padding:9px 10px;box-sizing:border-box;width:100%;" />
+          </label>
+          <label style="flex:1 1 100px;display:flex;flex-direction:column;gap:6px;font-family:Silkscreen,monospace;font-size:12px;color:#a05a3c;letter-spacing:1px;">TIME
+            <input type="time" value="{{ time }}" onChange="{{ setTime }}" style="font-family:Silkscreen,monospace;font-size:15px;color:#5b3a2e;background:#fff;border:3px solid #6b4636;box-shadow:inset 2px 2px 0 #ead9c8;padding:9px 10px;box-sizing:border-box;width:100%;" />
+          </label>
+          <label style="flex:1 1 100px;display:flex;flex-direction:column;gap:6px;font-family:Silkscreen,monospace;font-size:12px;color:#a05a3c;letter-spacing:1px;">HOW LONG
+            <select value="{{ dur }}" onChange="{{ setDur }}" style="font-family:Silkscreen,monospace;font-size:15px;color:#5b3a2e;background:#fff;border:3px solid #6b4636;box-shadow:inset 2px 2px 0 #ead9c8;padding:9px 10px;box-sizing:border-box;width:100%;">
+              <option value="1">1 hour</option>
+              <option value="2">2 hours</option>
+              <option value="3">3 hours</option>
+              <option value="4">4 hours</option>
+            </select>
+          </label>
+        </div>
+        <label style="display:flex;flex-direction:column;gap:6px;font-family:Silkscreen,monospace;font-size:12px;color:#a05a3c;letter-spacing:1px;">WHERE
+          <input value="{{ loc }}" onChange="{{ setLoc }}" placeholder="somewhere cute" style="font-family:Silkscreen,monospace;font-size:15px;color:#5b3a2e;background:#fff;border:3px solid #6b4636;box-shadow:inset 2px 2px 0 #ead9c8;padding:10px 12px;box-sizing:border-box;width:100%;" />
+        </label>
+        <button onClick="{{ addCal }}" onMouseEnter="{{ blipH }}" style="margin-top:4px;font-family:'Press Start 2P',monospace;font-size:12px;line-height:1.5;color:#fff8f0;background:#3f8f5b;border:4px solid #2c5e3d;box-shadow:inset 3px 3px 0 #6fbf86,inset -3px -3px 0 #2c5e3d,4px 4px 0 #244c33;padding:15px 16px;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:8px;">+ ADD TO GOOGLE CALENDAR</button>
+        <sc-if value="{{ scheduled }}" hint-placeholder-val="{{ false }}">
+          <div style="background:#fff;border:3px dashed #3f8f5b;padding:12px;font-family:Silkscreen,monospace;font-size:13px;color:#3f8f5b;text-align:center;line-height:1.6;">It&apos;s a date! &#9825; Opening Google Calendar&hellip;<br>see you then, Uyen Ni.</div>
+        </sc-if>
+      </div>
+    </div>
+  </sc-if>
+
+  <div style="margin-top:22px;font-family:Silkscreen,monospace;font-size:12px;color:#7a4a36;opacity:.85;">made with &#9825; by Leon</div>
+  </div>
+
+  <div style="position:relative;z-index:1;flex:none;width:100%;height:340px;overflow:hidden;">
+    <div style="position:absolute;left:0;right:0;bottom:0;height:46px;background:linear-gradient(#3a2738 0%,#2a1c2c 100%);"></div>
+    <div style="position:absolute;left:0;right:0;bottom:30px;height:2px;background:rgba(255,150,110,.30);"></div>
+    <div style="position:absolute;left:0;right:0;bottom:18px;height:2px;background:rgba(255,150,110,.18);"></div>
+    <div style="position:absolute;left:0;right:0;bottom:8px;height:2px;background:rgba(255,150,110,.12);"></div>
+
+    <div style="position:absolute;left:0;right:0;bottom:58px;display:flex;align-items:flex-end;justify-content:center;width:100%;opacity:.55;">
+      <sc-for list="{{ skyFar }}" as="b" hint-placeholder-count="0">
+        <div style="flex:none;width:{{ b.w }}px;height:{{ b.h }}px;background:{{ b.color }};"></div>
+      </sc-for>
+    </div>
+
+    <div style="position:absolute;left:0;right:0;bottom:50px;display:flex;align-items:flex-end;justify-content:center;width:100%;opacity:.8;">
+      <sc-for list="{{ skyMid }}" as="b" hint-placeholder-count="0">
+        <div style="flex:none;width:{{ b.w }}px;height:{{ b.h }}px;background:{{ b.color }};"></div>
+      </sc-for>
+    </div>
+
+    <div style="position:absolute;left:60%;bottom:46px;transform:translateX(-50%);display:flex;flex-direction:column;align-items:center;">
+      <div style="width:5px;height:16px;background:#ff5d73;border-radius:1px;box-shadow:0 0 9px rgba(255,93,115,.9);animation:blink 1.3s steps(1) infinite;"></div>
+      <div style="width:5px;height:72px;background:#7c5a72;"></div>
+      <div style="width:11px;height:14px;background:#7c5a72;border-radius:3px 3px 0 0;"></div>
+      <div style="position:relative;width:46px;height:26px;background:#6e4d68;border-radius:8px;box-shadow:0 0 18px rgba(255,205,140,.45);">
+        <div style="position:absolute;left:7px;top:9px;width:6px;height:6px;background:#ffe6ab;border-radius:1px;animation:twinkle 2.2s ease-in-out infinite;"></div>
+        <div style="position:absolute;left:20px;top:9px;width:6px;height:6px;background:#ffe6ab;border-radius:1px;animation:twinkle 2.9s ease-in-out .5s infinite;"></div>
+        <div style="position:absolute;left:33px;top:9px;width:6px;height:6px;background:#ffe6ab;border-radius:1px;animation:twinkle 2.5s ease-in-out 1s infinite;"></div>
+      </div>
+      <div style="width:13px;height:18px;background:#7c5a72;"></div>
+      <div style="position:relative;width:22px;height:120px;background:#7c5a72;background-image:repeating-linear-gradient(0deg,transparent 0 10px,rgba(0,0,0,.16) 10px 11px);">
+        <div style="position:absolute;left:8px;top:22px;width:5px;height:5px;background:#ffe6ab;animation:twinkle 3.1s ease-in-out .3s infinite;"></div>
+        <div style="position:absolute;left:8px;top:60px;width:5px;height:5px;background:#ffe6ab;animation:twinkle 2.7s ease-in-out 1.2s infinite;"></div>
+        <div style="position:absolute;left:8px;top:96px;width:5px;height:5px;background:#ffe6ab;animation:twinkle 2.3s ease-in-out .7s infinite;"></div>
+      </div>
+      <div style="width:36px;height:24px;background:#664760;"></div>
+    </div>
+
+    <div style="position:absolute;left:0;right:0;bottom:44px;display:flex;align-items:flex-end;justify-content:center;width:100%;">
+      <sc-for list="{{ skyNear }}" as="b" hint-placeholder-count="0">
+        <div style="position:relative;flex:none;width:{{ b.w }}px;height:{{ b.h }}px;background:{{ b.color }};background-image:repeating-linear-gradient(0deg,transparent 0 9px,rgba(0,0,0,.3) 9px 10px),repeating-linear-gradient(90deg,transparent 0 8px,rgba(0,0,0,.3) 8px 9px);">
+          <sc-for list="{{ b.wins }}" as="win" hint-placeholder-count="0">
+            <div style="position:absolute;left:{{ win.x }}px;top:{{ win.y }}px;width:5px;height:5px;background:#ffd98a;animation:twinkle {{ win.t }}s ease-in-out {{ win.d }}s infinite;"></div>
+          </sc-for>
+        </div>
+      </sc-for>
+    </div>
+
+    <div style="position:absolute;left:0;right:0;top:0;height:210px;background:linear-gradient(rgba(255,146,112,.6) 0%,rgba(255,146,112,.28) 45%,rgba(255,146,112,0) 100%);pointer-events:none;"></div>
+  </div>
+
+  <div style="position:fixed;inset:0;pointer-events:none;z-index:60;background:repeating-linear-gradient(0deg,rgba(0,0,0,.13) 0px,rgba(0,0,0,.13) 1px,transparent 1px,transparent 3px);"></div>
+  <div style="position:fixed;inset:0;pointer-events:none;z-index:59;background:radial-gradient(ellipse at center, transparent 60%, rgba(0,0,0,.28) 100%);"></div>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props="{&quot;$preview&quot;:{&quot;width&quot;:640,&quot;height&quot;:760},&quot;partnerName&quot;:{&quot;editor&quot;:&quot;text&quot;,&quot;default&quot;:&quot;Uyen Ni&quot;,&quot;tsType&quot;:&quot;string&quot;},&quot;senderName&quot;:{&quot;editor&quot;:&quot;text&quot;,&quot;default&quot;:&quot;Leon&quot;,&quot;tsType&quot;:&quot;string&quot;},&quot;dateTitle&quot;:{&quot;editor&quot;:&quot;text&quot;,&quot;default&quot;:&quot;Dinner &amp; a sunset walk&quot;,&quot;tsType&quot;:&quot;string&quot;}}">
+class Component extends DCLogic {
+  constructor(props){
+    super(props);
+    const t=new Date(Date.now()+86400000);
+    const p2=n=>String(n).padStart(2,'0');
+    this.state={
+      screen:'boot', bootPct:0, reasonIdx:0, typed:'',
+      stageIdx:0, qIdx:0, lives:3, selected:null, answered:false,
+      noCount:0, noPos:null, yesScale:1, mood:'idle',
+      title:(props && props.dateTitle) || 'Dinner & a sunset walk',
+      date:`${t.getFullYear()}-${p2(t.getMonth()+1)}-${p2(t.getDate())}`,
+      time:'19:00', dur:'2', loc:'', scheduled:false
+    };
+    this.containerRef=React.createRef();
+    this.ac=null;
+    const C={ k:'#6b4636', w:'#fff7ef', p:'#ff9fb0', e:'#3a2b25', c:'#ffc4cf' };
+    const base=[
+      '...kkk....kkk...',
+      '...kpk....kpk...',
+      '...kpk....kpk...',
+      '...kpk....kpk...',
+      '...kpk....kpk...',
+      '..kwwwwwwwwwwk..',
+      '..kwwwwwwwwwwk..',
+      '..kwwewwwwewwk..',
+      '..kwwewppwewwk..',
+      '..kwcwppppwcwk..',
+      '..kwwwwwwwwwwk..',
+      '...kwwwwwwwwk...',
+      '..kwwwwwwwwwwk..',
+      '..kwwwwwwwwwwk..',
+      '..kwwkwwwwkwwk..',
+      '..kkkkkkkkkkkk..'
+    ];
+    this.bunnyShadow=this.spriteShadow(base,11,C);
+    const heart=['.k.k.','kpppk','kpppk','.kpk.','..k..'];
+    this.heartShadow=this.spriteShadow(heart,5,{ p:'#ff7a93', k:'#e8546b' });
+    this.reasons=[
+      'the way you laugh at your own jokes',
+      'you always steal my hoodies (keep them)',
+      'your hugs fix entire bad days',
+      'you make even Toronto traffic fun',
+      'my favorite person to do nothing with',
+      'the little face you make when thinking',
+      'you say yes to my dumbest ideas',
+      'you, exactly as you are'
+    ];
+    this._hold=0;
+
+    const qdata=[
+      { st:0, q:'On which date did we first meet?', opts:['29 / 01 / 2022','03 / 03 / 2022','01 / 02 / 2022','01 / 02 / 1957'], ans:'29 / 01 / 2022' },
+      { st:0, q:'What is my favourite colour?', opts:['Blue','Green','Yellow','Pink'], ans:'Blue' },
+      { st:0, q:'What is my favourite food?', opts:['Pho','Goi Cuon','Bun Bo Hue','Burgers'], ans:'Pho' },
+      { st:1, q:'How many countries have we travelled to together?', opts:['24','12','37','8'], ans:'24' },
+      { st:1, q:'Where did we (oops) pee on each other?', opts:['Punta Cana','Bali','Singapore','Amsterdam'], ans:'Punta Cana' },
+      { st:1, q:'Where did we share our first kiss?', opts:['Tamar Park','Weave','Sunset Peak','Victoria Park'], ans:'Tamar Park' },
+      { st:2, q:'What is my love language?', opts:['Cuddles','Cooking','Surprising gifts','Being annoying'], ans:'Cuddles' },
+      { st:2, q:'Final question \u2014 the only correct answer is...', opts:['I love you, Leon \u2661','Nope','Maybe later','Error 404'], ans:'I love you, Leon \u2661' }
+    ];
+    const stageMeta=[
+      { name:'THE BASICS', blurb:'Easy stuff. You got this. \u2661' },
+      { name:'OUR ADVENTURES', blurb:'Trips, places & questionable decisions.' },
+      { name:'FROM THE HEART', blurb:'The final stretch...' }
+    ];
+    const shuffle=(arr)=>{ const a=arr.slice(); for(let i=a.length-1;i>0;i--){ const j=Math.floor(Math.random()*(i+1)); const tmp=a[i]; a[i]=a[j]; a[j]=tmp; } return a; };
+    this.stages=stageMeta.map((m,si)=>({
+      name:m.name, blurb:m.blurb,
+      qs: qdata.filter(d=>d.st===si).map(d=>{ const opts=shuffle(d.opts); return { q:d.q, options:opts, correct:opts.indexOf(d.ans) }; })
+    }));
+    this.totalStages=this.stages.length;
+  }
+
+  componentDidMount(){
+    this._boot=setInterval(()=>{
+      this.setState(s=>{
+        if(s.bootPct>=100) return null;
+        return { bootPct: Math.min(100, s.bootPct + (4 + Math.floor(Math.random()*10))) };
+      });
+    },110);
+    this._type=setInterval(()=>this.tick(),58);
+  }
+  componentWillUnmount(){ clearInterval(this._boot); clearInterval(this._type); clearTimeout(this._advTimer); }
+  tick(){
+    if(this.state.screen!=='win') return;
+    const full=this.reasons[this.state.reasonIdx] || '';
+    if(this.state.typed.length < full.length){
+      this.setState(s=>({ typed: full.slice(0, s.typed.length+1) }));
+      this._hold=0;
+    } else {
+      this._hold=(this._hold||0)+1;
+      if(this._hold>=34){ this._hold=0; this.setState(s=>({ reasonIdx:(s.reasonIdx+1)%this.reasons.length, typed:'' })); }
+    }
+  }
+  bootChime(){ [392,523,659,784,1046].forEach((f,i)=>this.tone(f,0.13,'square',0.06,i*0.07)); }
+  startGame=()=>{
+    this.ensureAudio();
+    if(this.state.bootPct < 100){ this.setState({ bootPct:100 }); this.blip(); return; }
+    this.bootChime();
+    this.setState({ screen:'ask' });
+  };
+
+  spriteShadow(map,px,colors){
+    const out=[];
+    for(let r=0;r<map.length;r++){
+      for(let c=0;c<map[r].length;c++){
+        const col=colors[map[r][c]];
+        if(col) out.push(`${c*px}px ${r*px}px 0 0 ${col}`);
+      }
+    }
+    return out.join(',');
+  }
+
+  ensureAudio(){
+    if(!this.ac){
+      try{ this.ac=new (window.AudioContext||window.webkitAudioContext)(); }catch(e){ return null; }
+    }
+    if(this.ac && this.ac.state==='suspended'){ this.ac.resume(); }
+    return this.ac;
+  }
+  tone(freq,dur,type,vol,delay){
+    const ac=this.ensureAudio(); if(!ac) return;
+    const t0=ac.currentTime+(delay||0);
+    const o=ac.createOscillator(), g=ac.createGain();
+    o.type=type||'square'; o.frequency.value=freq;
+    g.gain.setValueAtTime(0.0001,t0);
+    g.gain.linearRampToValueAtTime(vol||0.07,t0+0.012);
+    g.gain.exponentialRampToValueAtTime(0.0001,t0+dur);
+    o.connect(g); g.connect(ac.destination);
+    o.start(t0); o.stop(t0+dur+0.03);
+  }
+  blip(){ this.tone(740,0.07,'square',0.05,0); }
+  squeak(){ this.tone(300,0.06,'square',0.06,0); this.tone(540,0.06,'square',0.05,0.05); }
+  happy(){ [523,659,784,1046,1318].forEach((f,i)=>this.tone(f,0.2,'square',0.06,i*0.09)); }
+  buzz(){ this.tone(196,0.18,'square',0.06,0); this.tone(147,0.22,'square',0.05,0.07); }
+
+  set(k){ return (e)=>this.setState({ [k]: e.target.value }); }
+
+  dodge=(e)=>{
+    if(e){ if(e.preventDefault) e.preventDefault(); }
+    const el=this.containerRef.current; if(!el) return;
+    const w=el.clientWidth, h=el.clientHeight, bw=120, bh=56;
+    const x=Math.max(0,Math.random()*(w-bw));
+    const y=Math.max(0,Math.random()*(h-bh));
+    this.squeak();
+    this.setState(s=>({ noPos:{x,y}, noCount:s.noCount+1, yesScale:Math.min(2.3,s.yesScale+0.13), mood:'sad' }));
+  };
+
+  sayYes=()=>{ this.happy(); this.setState({ screen:'stageintro', stageIdx:0, qIdx:0, lives:3, selected:null, answered:false, mood:'idle' }); };
+  beginStage=()=>{ this.blip(); this.setState({ screen:'quiz', qIdx:0, selected:null, answered:false, mood:'idle' }); };
+  answer=(i)=>{
+    if(this.state.answered) return;
+    const stage=this.stages[this.state.stageIdx]; const q=stage.qs[this.state.qIdx];
+    const correct=(i===q.correct);
+    if(correct) this.happy(); else this.buzz();
+    this.setState(st=>({ selected:i, answered:true, mood: correct?'happy':'sad', lives: correct?st.lives:st.lives-1 }));
+    clearTimeout(this._advTimer);
+    this._advTimer=setTimeout(()=>this.advance(correct), 1200);
+  };
+  advance(wasCorrect){
+    const s=this.state; const stage=this.stages[s.stageIdx];
+    if(!wasCorrect && s.lives<=0){ this.setState({ screen:'gameover', mood:'sad' }); return; }
+    if(s.qIdx < stage.qs.length-1){ this.setState({ qIdx:s.qIdx+1, selected:null, answered:false, mood:'idle' }); }
+    else { this.setState({ screen:'stageclear', selected:null, answered:false, mood:'happy' }); }
+  }
+  nextStage=()=>{
+    const s=this.state;
+    if(s.stageIdx < this.stages.length-1){ this.blip(); this.setState({ screen:'stageintro', stageIdx:s.stageIdx+1, qIdx:0, mood:'idle' }); }
+    else { this.happy(); this.setState({ screen:'win', mood:'happy' }); }
+  };
+  retryQuiz=()=>{ this.blip(); this.setState({ screen:'stageintro', stageIdx:0, qIdx:0, lives:3, selected:null, answered:false, mood:'idle' }); };
+
+  pad(n){ return String(n).padStart(2,'0'); }
+  addCal=()=>{
+    this.blip();
+    const {title,date,time,dur,loc}=this.state;
+    const start=new Date(`${date}T${time||'19:00'}`);
+    const end=new Date(start.getTime()+parseFloat(dur||'2')*3600000);
+    const fmt=(d)=>`${d.getFullYear()}${this.pad(d.getMonth()+1)}${this.pad(d.getDate())}T${this.pad(d.getHours())}${this.pad(d.getMinutes())}00`;
+    const sender=(this.props && this.props.senderName) || 'Leon';
+    const u=new URL('https://calendar.google.com/calendar/render');
+    u.searchParams.set('action','TEMPLATE');
+    u.searchParams.set('text', title || ('Date with '+sender));
+    u.searchParams.set('dates', `${fmt(start)}/${fmt(end)}`);
+    u.searchParams.set('details', 'Made with love by '+sender+'. Cannot wait! <3');
+    if(loc) u.searchParams.set('location', loc);
+    window.open(u.toString(), '_blank');
+    this.setState({ scheduled:true });
+  };
+
+  renderVals(){
+    const s=this.state;
+    const partner=(this.props && this.props.partnerName) || 'Uyen Ni';
+    const qs=[
+      `Do you still love me, ${partner}?`,
+      'Wait... are you sure?',
+      'Hmm, think about it again!',
+      'The button does not want this either!',
+      '"Yes" is right there, you know  \u2192',
+      'You will never catch "No" anyway!',
+      'Pretty please? Just say yes \u2661',
+      'Leon is getting nervous down here...',
+      'Okay now you are just teasing him \u2661'
+    ];
+    const mood=s.mood;
+    const mouths={
+      idle:['.....','.....','.kkk.'],
+      happy:['k...k','k...k','.kkk.'],
+      sad:['.kkk.','k...k','k...k']
+    };
+    const mouthShadow=this.spriteShadow(mouths[mood]||mouths.idle,7,{ k: mood==='happy'?'#d65a78':'#6b4636' });
+    const anims={ idle:'bob 2.4s ease-in-out infinite', sad:'tremble .35s ease-in-out infinite', happy:'hop .95s ease-in-out infinite' };
+    if(!this._confetti){
+      const cols=['#ff7a5c','#ffd6a5','#ff9fb0','#ffe08a','#ff5d73','#9bd9f2'];
+      const a=[];
+      for(let i=0;i<28;i++){
+        a.push({ left:+(Math.random()*100).toFixed(1), delay:+(Math.random()*2.2).toFixed(2), dur:+(2.6+Math.random()*2.2).toFixed(2), color:cols[i%cols.length], size:8+Math.floor(Math.random()*9) });
+      }
+      this._confetti=a;
+    }
+    if(!this._sky){
+      const rnd=(a,b)=>a+Math.floor(Math.random()*(b-a+1));
+      const mk=(target,wMin,wMax,hMin,hMax,cols,win)=>{
+        const arr=[]; let sum=0;
+        while(sum<target){
+          const w=rnd(wMin,wMax), h=rnd(hMin,hMax);
+          const b={ w, h, color: cols[rnd(0,cols.length-1)], wins:[] };
+          if(win){ const n=rnd(0,2); for(let k=0;k<n;k++){ const wy=rnd(16,Math.max(18,h-14)); b.wins.push({ x:rnd(4,Math.max(5,w-9)), y:wy, d:(Math.random()*2).toFixed(2), t:(2+Math.random()*1.6).toFixed(2) }); } }
+          arr.push(b); sum+=w;
+        }
+        return arr;
+      };
+      this._sky={
+        far: mk(2600,13,24,34,96,['#edbcb1','#e7b3a8','#f0c2b6','#e3ada3'],false),
+        mid: mk(2600,15,29,64,156,['#b38494','#a5788a','#bb8b9b','#ab7e90'],false),
+        near: mk(2600,18,32,78,176,['#4a3346','#3f2c3b','#553c4f','#473041'],true)
+      };
+    }
+    const _stage=this.stages[s.stageIdx];
+    const _q=_stage?_stage.qs[s.qIdx]:null;
+    let _optionVMs=[];
+    if(_q){
+      _optionVMs=_q.options.map((t,i)=>{
+        let bg='#fff3e6',col='#5b3a2e',bd='#6b4636',sh='inset 2px 2px 0 #fffdfb,inset -2px -2px 0 #e9d3bf,3px 3px 0 #6b4636';
+        if(s.answered){
+          if(i===_q.correct){ bg='#3f8f5b';col='#fff8f0';bd='#2c5e3d';sh='inset 2px 2px 0 #6fbf86,inset -2px -2px 0 #2c5e3d,3px 3px 0 #244c33'; }
+          else if(i===s.selected){ bg='#d8543b';col='#fff8f0';bd='#7a2d1d';sh='inset 2px 2px 0 #ff9b86,inset -2px -2px 0 #7a2d1d,3px 3px 0 #5a2115'; }
+          else { bg='#e8dccf';col='#a89684';bd='#bcae9e';sh='none'; }
+        }
+        return { text:t, letter:'ABCD'[i], pick:()=>this.answer(i), bg, col, bd, sh };
+      });
+    }
+    const _lives=[0,1,2].map(i=>({ c: i<s.lives?'#ff5d73':'#caa9b0' }));
+    return {
+      isBoot:s.screen==='boot', bootPct:s.bootPct, bootReady:s.bootPct>=100, notBootReady:s.bootPct<100,
+      startGame:this.startGame, reasonText:s.typed,
+      isAsk:s.screen==='ask', isWin:s.screen==='win', scheduled:s.scheduled,
+      isStageIntro:s.screen==='stageintro', isQuiz:s.screen==='quiz', isStageClear:s.screen==='stageclear', isGameOver:s.screen==='gameover',
+      stageName:_stage?_stage.name:'', stageBlurb:_stage?_stage.blurb:'', stageNumber:s.stageIdx+1, totalStages:this.totalStages,
+      quizQ:_q?_q.q:'', optionVMs:_optionVMs, lives:_lives, livesLeft:s.lives,
+      qNumber:s.qIdx+1, qTotalInStage:_stage?_stage.qs.length:0,
+      lastStage:s.stageIdx>=this.totalStages-1, nextLabel:(s.stageIdx>=this.totalStages-1?'CLAIM YOUR DATE':'NEXT STAGE'),
+      beginStage:this.beginStage, nextStage:this.nextStage, retryQuiz:this.retryQuiz,
+      question:qs[Math.min(s.noCount,qs.length-1)],
+      noEscaped:!!s.noPos, notEscaped:!s.noPos,
+      noLeft:s.noPos?Math.round(s.noPos.x):0, noTop:s.noPos?Math.round(s.noPos.y):0,
+      yesScale:s.yesScale, moodSad:mood==='sad',
+      bunnyShadow:this.bunnyShadow, mouthShadow, bunnyAnim:anims[mood]||anims.idle,
+      heartShadow:this.heartShadow, confetti:this._confetti,
+      skyFar:this._sky.far, skyMid:this._sky.mid, skyNear:this._sky.near,
+      title:s.title, date:s.date, time:s.time, dur:s.dur, loc:s.loc,
+      containerRef:this.containerRef,
+      dodge:this.dodge, sayYes:this.sayYes, blipH:()=>this.blip(), addCal:this.addCal,
+      setTitle:this.set('title'), setDate:this.set('date'), setTime:this.set('time'), setDur:this.set('dur'), setLoc:this.set('loc')
+    };
+  }
+}
+</script>
+</body>
+</html>
