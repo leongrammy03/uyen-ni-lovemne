@@ -228,5 +228,25 @@ window.LOVE_GAME_CONFIG = {
       mid: ['#b38494', '#a5788a', '#bb8b9b', '#ab7e90'],
       near: ['#4a3346', '#3f2c3b', '#553c4f', '#473041']
     }
-  }
+  },
+
+  // ♥ Secret easter egg — type "ocean" anywhere on the page
+  // Edit these lines to write your real love letter.
+  konamiLetter: [
+    'PLAYER 1,',
+    '',
+    'If you find this letter, it means that unfortunately things did not work out between us, I hope though that despite everything you found a happy place in your life',
+    'If you find this letter, it means that unfortunately things did not work out between us, I hope though that despite everything you found a happy place in your life',
+    'If you find this letter, it means that unfortunately things did not work out between us, I hope though that despite everything you found a happy place in your life',
+    'If you find this letter, it means that unfortunately things did not work out between us, I hope though that despite everything you found a happy place in your life',
+    'If you find this letter, it means that unfortunately things did not work out between us, I hope though that despite everything you found a happy place in your life',
+    'If you find this letter, it means that unfortunately things did not work out between us, I hope though that despite everything you found a happy place in your life',
+    'If you find this letter, it means that unfortunately things did not work out between us, I hope though that despite everything you found a happy place in your life',
+    'I will always cherist the time that we spent together, no matter what...',
+    '',
+    'Edit this in game-config.js',
+    'under konamiLetter.',
+    '',
+    '- Leon ♡'
+  ]
 };
