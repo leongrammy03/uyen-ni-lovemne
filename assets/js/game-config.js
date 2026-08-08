@@ -617,5 +617,8 @@ window.LOVE_GAME_CONFIG = {
     '( no credits remaining )',
     '',
     '- Leon ♡'
-  ]
+  ],
+
+  // ♥ The quiet resting screen shown on every visit after the ending.
+  restingLine: 'from ocean to ocean'
 };

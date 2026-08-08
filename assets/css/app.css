@@ -193,6 +193,78 @@ label,
   background: #ff9fb0;
 }
 
+/* The resting place — where every visit lands once the game is over. */
+.rested-screen {
+  position: fixed;
+  inset: 0;
+  z-index: 205;
+  background:
+    radial-gradient(ellipse at center, rgba(255, 93, 115, 0.05) 0%, transparent 62%),
+    #050308;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 36px;
+  padding: 24px;
+  box-sizing: border-box;
+  overflow: hidden;
+  cursor: default;
+  animation: restFadeIn 1.8s ease forwards;
+}
+
+.rested-heart {
+  width: 25px;
+  height: 25px;
+  transform: scale(2.3);
+  transform-origin: center;
+  animation: restPulse 3.6s ease-in-out infinite;
+}
+
+.rested-clocks {
+  display: flex;
+  gap: min(56px, 14vw);
+  align-items: flex-start;
+}
+
+.rested-clock {
+  text-align: center;
+}
+
+.rested-clock-label {
+  font-family: Silkscreen, monospace;
+  font-size: 10px;
+  letter-spacing: 2px;
+  color: #9bd9f2;
+  opacity: 0.75;
+  margin-bottom: 9px;
+}
+
+.rested-clock-time {
+  font-family: "Press Start 2P", monospace;
+  font-size: 17px;
+  color: #ffe08a;
+  text-shadow: 0 0 10px rgba(255, 224, 138, 0.32);
+}
+
+.rested-line {
+  font-family: Silkscreen, monospace;
+  font-size: 13px;
+  letter-spacing: 2px;
+  color: #6a5a72;
+  text-align: center;
+}
+
+@keyframes restFadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+@keyframes restPulse {
+  0%, 100% { opacity: 0.5; }
+  50% { opacity: 1; }
+}
+
 .crt-power-on::before {
   content: "";
   position: absolute;
@@ -842,5 +914,81 @@ label,
   100% {
     transform: translate(-50%, -10px) scale(0.96);
     opacity: 0;
+  }
+}
+
+/* ============================================================
+   Mobile friendliness
+   ============================================================ */
+
+/* Never let the page scroll sideways. */
+html,
+body {
+  max-width: 100%;
+  overflow-x: hidden;
+}
+
+/* Snappy, native-feeling taps: no grey flash, no 300ms delay,
+   no double-tap-to-zoom on the game controls, no text-selection
+   flicker when tapping buttons rapidly. */
+* {
+  -webkit-tap-highlight-color: transparent;
+}
+
+button,
+a,
+select,
+input,
+[onclick],
+[onClick] {
+  touch-action: manipulation;
+}
+
+button,
+[onclick],
+[onClick] {
+  -webkit-user-select: none;
+  user-select: none;
+}
+
+/* Form fields must be >=16px or iOS Safari zooms the whole page on
+   focus. Overrides the 15px inline styles on the date form. */
+input,
+select,
+textarea {
+  font-size: 16px !important;
+}
+
+@media (max-width: 760px) {
+  /* Give the game content room to clear the fixed marquee (top) and
+     control deck (bottom) so tall screens (the win/date form) aren't
+     hidden behind the cabinet chrome. */
+  .game-content {
+    padding-top: 68px !important;
+    padding-bottom: 64px !important;
+  }
+}
+
+@media (max-width: 480px) {
+  /* Resting screen: keep both clocks on one comfortable row. */
+  .rested-clocks {
+    gap: 20px;
+  }
+
+  .rested-clock-time {
+    font-size: 14px;
+  }
+
+  .rested-clock-label {
+    font-size: 9px;
+    letter-spacing: 1px;
+  }
+
+  .rested-line {
+    font-size: 11px;
+  }
+
+  .rested-screen {
+    gap: 28px;
   }
 }

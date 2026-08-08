@@ -69,7 +69,7 @@
           <div style="position:absolute;left:70px;top:119px;width:7px;height:7px;box-shadow:{{ mouthShadow }};"></div>
         </div>
       </div>
-      <div style="font-family:'Press Start 2P',monospace;font-size:26px;line-height:1.5;color:#ff5d73;text-shadow:0 0 12px rgba(255,93,115,.6),3px 3px 0 #6b1f2e;letter-spacing:2px;">DO YOU STILL<br>LOVE ME?</div>
+      <div style="font-family:'Press Start 2P',monospace;font-size:clamp(18px,6.5vw,26px);line-height:1.5;color:#ff5d73;text-shadow:0 0 12px rgba(255,93,115,.6),3px 3px 0 #6b1f2e;letter-spacing:2px;">DO YOU STILL<br>LOVE ME?</div>
       <div style="font-family:Silkscreen,monospace;font-size:13px;color:#9bd9f2;letter-spacing:2px;">A LEON-CO PRODUCTION</div>
       <sc-if value="{{ notBootReady }}" hint-placeholder-val="{{ true }}">
         <div style="display:flex;flex-direction:column;align-items:center;gap:10px;margin-top:6px;">
@@ -140,6 +140,26 @@
     </div>
   </sc-if>
 
+  <sc-if value="{{ isRested }}" hint-placeholder-val="{{ false }}">
+    <div class="rested-screen">
+      <div class="rested-heart" aria-hidden="true">
+        <div style="width:5px;height:5px;box-shadow:{{ heartShadow }};"></div>
+      </div>
+      <div class="rested-clocks">
+        <div class="rested-clock">
+          <div class="rested-clock-label">{{ restPartnerLabel }}</div>
+          <div class="rested-clock-time">{{ restPartnerClock }}</div>
+        </div>
+        <div class="rested-clock">
+          <div class="rested-clock-label">{{ restSenderLabel }}</div>
+          <div class="rested-clock-time">{{ restSenderClock }}</div>
+        </div>
+      </div>
+      <div class="rested-line">{{ restingLine }}</div>
+      <div class="credits-scanlines" aria-hidden="true"></div>
+    </div>
+  </sc-if>
+
   <sc-if value="{{ hasAchievementToast }}" hint-placeholder-val="{{ false }}">
     <div style="position:fixed;top:22px;left:50%;z-index:80;width:min(430px,88vw);background:#241531;border:4px solid #6b4636;box-shadow:inset 3px 3px 0 #3a2348,inset -3px -3px 0 #160d20,6px 6px 0 rgba(20,10,28,.45),0 0 18px rgba(255,93,115,.42);padding:13px 15px;box-sizing:border-box;animation:achievementPop 2.9s ease-in-out both;pointer-events:none;">
       <div style="font-family:Silkscreen,monospace;font-size:10px;color:#9bd9f2;letter-spacing:2px;margin-bottom:7px;">ACHIEVEMENT UNLOCKED</div>
@@ -148,7 +168,7 @@
     </div>
   </sc-if>
 
-  <div style="flex:1 1 auto;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:30px 16px;box-sizing:border-box;position:relative;z-index:2;">
+  <div class="game-content" style="flex:1 1 auto;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:30px 16px;box-sizing:border-box;position:relative;z-index:2;">
   <sc-if value="{{ isAsk }}" hint-placeholder-val="{{ true }}">
     <div style="position:relative;z-index:2;width:min(560px,92vw);background:#fff8f0;border:4px solid #6b4636;box-shadow:inset 4px 4px 0 #fffdfb,inset -4px -4px 0 #f0d8c4,10px 10px 0 rgba(91,58,46,.22);padding:34px 26px 26px;display:flex;flex-direction:column;align-items:center;gap:16px;box-sizing:border-box;">
 
@@ -191,7 +211,7 @@
   <sc-if value="{{ isStageIntro }}" hint-placeholder-val="{{ false }}">
     <div style="position:relative;z-index:2;width:min(560px,92vw);background:#241531;border:4px solid #4a2d52;box-shadow:inset 3px 3px 0 #3a2348,inset -3px -3px 0 #160d20,10px 10px 0 rgba(20,10,28,.4);padding:36px 28px;display:flex;flex-direction:column;align-items:center;gap:18px;box-sizing:border-box;">
       <div style="font-family:'Press Start 2P',monospace;font-size:13px;color:#9bd9f2;letter-spacing:2px;">STAGE {{ stageNumber }} / {{ totalStages }}</div>
-      <div style="font-family:'Press Start 2P',monospace;font-size:21px;color:#ffd98a;text-shadow:0 0 10px rgba(255,217,138,.5),3px 3px 0 #6b4a1e;text-align:center;line-height:1.5;">{{ stageName }}</div>
+      <div style="font-family:'Press Start 2P',monospace;font-size:clamp(15px,5vw,21px);color:#ffd98a;text-shadow:0 0 10px rgba(255,217,138,.5),3px 3px 0 #6b4a1e;text-align:center;line-height:1.5;">{{ stageName }}</div>
       <div style="transform:scale(.62);margin:-14px 0;"><div style="position:relative;width:176px;height:176px;animation:{{ bunnyAnim }};"><div style="position:absolute;left:0;top:0;width:11px;height:11px;box-shadow:{{ bunnyShadow }};"></div><div style="position:absolute;left:70px;top:119px;width:7px;height:7px;box-shadow:{{ mouthShadow }};"></div></div></div>
       <div style="font-family:Silkscreen,monospace;font-size:15px;color:#e6c6e0;text-align:center;">{{ stageBlurb }}</div>
       <button onClick="{{ beginStage }}" onMouseEnter="{{ blipH }}" style="font-family:'Press Start 2P',monospace;font-size:13px;color:#fff8f0;background:#3f8f5b;border:4px solid #2c5e3d;box-shadow:inset 3px 3px 0 #6fbf86,inset -3px -3px 0 #2c5e3d,4px 4px 0 #244c33;padding:15px 22px;cursor:pointer;">START &#9654;</button>
@@ -218,7 +238,7 @@
 
   <sc-if value="{{ isStageClear }}" hint-placeholder-val="{{ false }}">
     <div style="position:relative;z-index:2;width:min(560px,92vw);background:#241531;border:4px solid #4a2d52;box-shadow:inset 3px 3px 0 #3a2348,inset -3px -3px 0 #160d20,10px 10px 0 rgba(20,10,28,.4);padding:36px 28px;display:flex;flex-direction:column;align-items:center;gap:18px;box-sizing:border-box;">
-      <div style="font-family:'Press Start 2P',monospace;font-size:23px;color:#7be0a0;text-shadow:0 0 12px rgba(123,224,160,.6),3px 3px 0 #1e5a36;text-align:center;">STAGE CLEAR!</div>
+      <div style="font-family:'Press Start 2P',monospace;font-size:clamp(17px,5.5vw,23px);color:#7be0a0;text-shadow:0 0 12px rgba(123,224,160,.6),3px 3px 0 #1e5a36;text-align:center;">STAGE CLEAR!</div>
       <div style="transform:scale(.66);margin:-12px 0;"><div style="position:relative;width:176px;height:176px;animation:{{ bunnyAnim }};"><div style="position:absolute;left:0;top:0;width:11px;height:11px;box-shadow:{{ bunnyShadow }};"></div><div style="position:absolute;left:70px;top:119px;width:7px;height:7px;box-shadow:{{ mouthShadow }};"></div></div></div>
       <div style="font-family:Silkscreen,monospace;font-size:15px;color:#e6c6e0;display:flex;align-items:center;"><span style="display:flex;gap:4px;margin-right:8px;"><sc-for list="{{ lives }}" as="l" hint-placeholder-count="0"><span style="color:{{ l.c }};font-size:17px;">&#9829;</span></sc-for></span>remaining</div>
       <button onClick="{{ nextStage }}" onMouseEnter="{{ blipH }}" style="font-family:'Press Start 2P',monospace;font-size:13px;color:#fff8f0;background:#3f8f5b;border:4px solid #2c5e3d;box-shadow:inset 3px 3px 0 #6fbf86,inset -3px -3px 0 #2c5e3d,4px 4px 0 #244c33;padding:15px 22px;cursor:pointer;">{{ nextLabel }} &#9654;</button>
@@ -227,7 +247,7 @@
 
   <sc-if value="{{ isGameOver }}" hint-placeholder-val="{{ false }}">
     <div style="position:relative;z-index:2;width:min(560px,92vw);background:#241531;border:4px solid #4a2d52;box-shadow:inset 3px 3px 0 #3a2348,inset -3px -3px 0 #160d20,10px 10px 0 rgba(20,10,28,.4);padding:36px 28px;display:flex;flex-direction:column;align-items:center;gap:18px;box-sizing:border-box;">
-      <div style="font-family:'Press Start 2P',monospace;font-size:23px;color:#ff5d73;text-shadow:0 0 12px rgba(255,93,115,.6),3px 3px 0 #6b1f2e;">GAME OVER</div>
+      <div style="font-family:'Press Start 2P',monospace;font-size:clamp(17px,5.5vw,23px);color:#ff5d73;text-shadow:0 0 12px rgba(255,93,115,.6),3px 3px 0 #6b1f2e;">GAME OVER</div>
       <div style="transform:scale(.66);margin:-12px 0;"><div style="position:relative;width:176px;height:176px;animation:{{ bunnyAnim }};"><div style="position:absolute;left:0;top:0;width:11px;height:11px;box-shadow:{{ bunnyShadow }};"></div><div style="position:absolute;left:70px;top:119px;width:7px;height:7px;box-shadow:{{ mouthShadow }};"></div></div></div>
       <div style="font-family:Silkscreen,monospace;font-size:15px;color:#e6c6e0;text-align:center;line-height:1.6;">Out of hearts!<br>But you always get a continue with me. &#9825;</div>
       <button onClick="{{ retryQuiz }}" onMouseEnter="{{ blipH }}" style="font-family:'Press Start 2P',monospace;font-size:13px;color:#fff8f0;background:#ff6f59;border:4px solid #6b1f2e;box-shadow:inset 3px 3px 0 #ffb09c,inset -3px -3px 0 #d8472f,4px 4px 0 #6b1f2e;padding:15px 22px;cursor:pointer;">INSERT &#9829; COIN</button>
@@ -249,7 +269,7 @@
         </div>
       </div>
 
-      <div style="font-family:'Press Start 2P',monospace;font-size:22px;color:#ff5d73;text-shadow:3px 3px 0 #6b4636;text-align:center;letter-spacing:1px;">YOU WIN! &#9825;</div>
+      <div style="font-family:'Press Start 2P',monospace;font-size:clamp(16px,5.5vw,22px);color:#ff5d73;text-shadow:3px 3px 0 #6b4636;text-align:center;letter-spacing:1px;">YOU WIN! &#9825;</div>
       <div style="font-family:Silkscreen,monospace;font-size:15px;color:#6b4636;text-align:center;line-height:1.7;">You still deserve my heart &mdash;<br>time to schedule a date with me :)</div>
 
       <div style="width:100%;background:#2a1830;border:4px solid #6b4636;box-shadow:inset 3px 3px 0 #3d2747,inset -3px -3px 0 #1c1226;padding:16px 18px;display:flex;flex-direction:column;gap:8px;box-sizing:border-box;">
@@ -430,7 +450,7 @@ class Component extends DCLogic {
     let alreadyEnded=false;
     try{ alreadyEnded=window.localStorage.getItem(this.endedKey)==='1'; }catch(e){ alreadyEnded=false; }
     this.state={
-      screen:alreadyEnded?'credits':'boot', powerState:alreadyEnded?'done':'off', bootPct:alreadyEnded?100:0, reasonIdx:0, typed:'', showKonami:false, letterAtBottom:false,
+      screen:alreadyEnded?'rested':'boot', powerState:alreadyEnded?'done':'off', bootPct:alreadyEnded?100:0, reasonIdx:0, typed:'', showKonami:false, letterAtBottom:false,
       stageIdx:0, qIdx:0, lives:this.maxLives, selected:null, answered:false,
       noCount:0, noPos:null, yesScale:1, mood:'idle', clockTick:0,
       correctCount:0, wrongCount:0, achievementToast:null,
@@ -466,11 +486,12 @@ class Component extends DCLogic {
   }
 
   componentDidMount(){
-    if(this.state.screen==='credits'){
-      // Game already ended on a previous visit — stay dead, just roll credits.
-      this._letterMusicOnGesture=()=>{ const song=document.getElementById('letter-music'); if(song){ song.volume=0.55; song.play().catch(()=>{}); } };
+    if(this.state.screen==='rested'){
+      // Game already ended on a previous visit — land on the quiet resting place,
+      // clocks still ticking. No boot, no credits, no way back in.
+      this._startRestClock();
+      this._letterMusicOnGesture=()=>{ const song=document.getElementById('letter-music'); if(song){ song.volume=0.4; song.play().catch(()=>{}); } };
       window.addEventListener('pointerdown',this._letterMusicOnGesture,{ once:true });
-      setTimeout(()=>this._startCreditsScroll(),200);
       return;
     }
     this._boot=setInterval(()=>{
@@ -493,7 +514,7 @@ class Component extends DCLogic {
     window.addEventListener('keydown',this._konamiHandler);
     this._fetchWeather();
   }
-  componentWillUnmount(){ clearInterval(this._boot); clearInterval(this._type); clearInterval(this._clock); clearInterval(this._konamiScrollInterval); clearInterval(this._creditsScrollInterval); clearTimeout(this._advTimer); clearTimeout(this._achievementTimer); clearTimeout(this._powerTimer); clearTimeout(this._shutdownTimer); if(this._unlockAudio) window.removeEventListener('pointerdown',this._unlockAudio); if(this._letterMusicOnGesture) window.removeEventListener('pointerdown',this._letterMusicOnGesture); if(this._konamiHandler) window.removeEventListener('keydown',this._konamiHandler); const wo=document.getElementById('weather-overlay'); if(wo) wo.innerHTML=''; this.stopAmbient(); this.stopRainSound(); }
+  componentWillUnmount(){ clearInterval(this._boot); clearInterval(this._type); clearInterval(this._clock); clearInterval(this._konamiScrollInterval); clearInterval(this._creditsScrollInterval); clearTimeout(this._advTimer); clearTimeout(this._achievementTimer); clearTimeout(this._powerTimer); clearTimeout(this._shutdownTimer); clearTimeout(this._restTimer); clearTimeout(this._creditsRetry); if(this._unlockAudio) window.removeEventListener('pointerdown',this._unlockAudio); if(this._letterMusicOnGesture) window.removeEventListener('pointerdown',this._letterMusicOnGesture); if(this._konamiHandler) window.removeEventListener('keydown',this._konamiHandler); const wo=document.getElementById('weather-overlay'); if(wo) wo.innerHTML=''; this.stopAmbient(); this.stopRainSound(); }
   tick(){
     if(this.state.screen!=='win') return;
     const full=this.reasons[this.state.reasonIdx] || '';
@@ -589,7 +610,7 @@ class Component extends DCLogic {
   blip(){ this.tone(740,0.07,'square',0.05,0); }
   konamiChime(){ [392,523,659,784,1046,1318,1568].forEach((f,i)=>this.tone(f,0.18,'square',0.05,i*0.065)); }
   letterScroll=(e)=>{ const el=(e&&(e.currentTarget||e.target))||document.getElementById('konami-scroll'); if(!el) return; const atBottom=el.scrollTop+el.clientHeight>=el.scrollHeight-8; if(atBottom!==this.state.letterAtBottom) this.setState({ letterAtBottom:atBottom }); };
-  _startCreditsScroll(){ const outer=document.getElementById('credits-scroll'),inner=document.getElementById('credits-inner'); if(!outer||!inner){ clearTimeout(this._creditsRetry); this._creditsRetry=setTimeout(()=>this._startCreditsScroll(),150); return; } let moved=0; inner.style.transform='translateY(0)'; clearInterval(this._creditsScrollInterval); this._creditsScrollInterval=setInterval(()=>{ const max=inner.offsetHeight-outer.clientHeight; if(max<=0) return; if(moved>=max){ clearInterval(this._creditsScrollInterval); return; } moved+=0.35; inner.style.transform=`translateY(-${moved}px)`; },24); }
+  _startCreditsScroll(){ const outer=document.getElementById('credits-scroll'),inner=document.getElementById('credits-inner'); if(!outer||!inner){ clearTimeout(this._creditsRetry); this._creditsRetry=setTimeout(()=>this._startCreditsScroll(),150); return; } let moved=0; inner.style.transform='translateY(0)'; clearInterval(this._creditsScrollInterval); this._creditsScrollInterval=setInterval(()=>{ const max=inner.offsetHeight-outer.clientHeight; if(max<=0) return; if(moved>=max){ clearInterval(this._creditsScrollInterval); clearTimeout(this._restTimer); this._restTimer=setTimeout(()=>{ this._startRestClock(); this.setState({ screen:'rested' }); },2800); return; } moved+=0.35; inner.style.transform=`translateY(-${moved}px)`; },24); }
   crtPowerDown(){ this.crtCrackle(); this.tone(70,0.55,'sine',0.06,0.03); this.tone(44,0.5,'sawtooth',0.04,0.18); }
   beginShutdown=()=>{
     if(this.state.screen==='shutdown'||this.state.screen==='credits') return;
@@ -829,6 +850,15 @@ class Component extends DCLogic {
       return new Intl.DateTimeFormat('en-US',{ weekday:'short', hour:'numeric', minute:'2-digit', hour12:true }).format(new Date());
     }
   }
+  // Resting-screen clock: HH:MM:SS, 24h, no timezone name (keeps location ambiguous).
+  restClock(tz){
+    try{
+      return new Intl.DateTimeFormat('en-GB',{ timeZone:tz, hour:'2-digit', minute:'2-digit', second:'2-digit', hour12:false }).format(new Date());
+    }catch(e){
+      return new Intl.DateTimeFormat('en-GB',{ hour:'2-digit', minute:'2-digit', second:'2-digit', hour12:false }).format(new Date());
+    }
+  }
+  _startRestClock(){ clearInterval(this._clock); this._clock=setInterval(()=>this.setState(s=>({ clockTick:s.clockTick+1 })),1000); }
   addCal=()=>{
     this.blip();
     const {title,date,time,dur,loc,selectedDateIdeaId}=this.state;
@@ -955,13 +985,16 @@ class Component extends DCLogic {
       setDateIdea:this.setDateIdea, setDate:this.set('date'), setTime:this.set('time'), setDur:this.set('dur'), setLoc:this.set('loc'),
       showKonami:s.showKonami, closeKonami:this.closeKonami, endGame:this.endGame,
       letterScroll:this.letterScroll, letterAtBottom:s.letterAtBottom, letterNotAtBottom:!s.letterAtBottom,
-      isShutdown:s.screen==='shutdown', isCredits:s.screen==='credits',
+      isShutdown:s.screen==='shutdown', isCredits:s.screen==='credits', isRested:s.screen==='rested',
+      restingLine:this.config.restingLine || 'from ocean to ocean',
+      restPartnerLabel:partner.toUpperCase()+' TIME', restPartnerClock:this.restClock(partnerTz),
+      restSenderLabel:sender.toUpperCase()+' · SOMEWHERE', restSenderClock:this.restClock('UTC'),
       creditLines:(this.config.creditsRoll||[]).map((t)=>{
         const big=typeof t==='string' && t.indexOf('# ')===0;
         const text=big?t.slice(2):(t||' ');
         const style=big
-          ? "font-family:'Press Start 2P',monospace;font-size:20px;line-height:1.6;color:#ff5d73;text-shadow:0 0 14px rgba(255,93,115,.6),3px 3px 0 #6b1f2e;letter-spacing:2px;text-align:center;margin:12px 0;"
-          : "font-family:Silkscreen,monospace;font-size:14px;line-height:1.95;color:#ffe08a;letter-spacing:1px;text-align:center;white-space:pre;";
+          ? "font-family:'Press Start 2P',monospace;font-size:clamp(15px,5.5vw,20px);line-height:1.6;color:#ff5d73;text-shadow:0 0 14px rgba(255,93,115,.6),3px 3px 0 #6b1f2e;letter-spacing:2px;text-align:center;margin:12px 0;"
+          : "font-family:Silkscreen,monospace;font-size:clamp(11px,3.5vw,14px);line-height:1.95;color:#ffe08a;letter-spacing:1px;text-align:center;white-space:pre;";
         return { text, style };
       }),
       konamiLines:this.konamiLetter.map((t)=>({ text:t||' ' }))
