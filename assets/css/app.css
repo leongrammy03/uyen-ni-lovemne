@@ -221,30 +221,42 @@ label,
   animation: restPulse 3.6s ease-in-out infinite;
 }
 
-.rested-clocks {
+.rested-disruption {
   display: flex;
-  gap: min(56px, 14vw);
-  align-items: flex-start;
-}
-
-.rested-clock {
+  flex-direction: column;
+  align-items: center;
+  gap: 14px;
   text-align: center;
 }
 
-.rested-clock-label {
+.rested-disrupt-label {
   font-family: Silkscreen, monospace;
-  font-size: 10px;
-  letter-spacing: 2px;
-  color: #9bd9f2;
-  opacity: 0.75;
-  margin-bottom: 9px;
+  font-size: 11px;
+  letter-spacing: 3px;
+  color: #ff5d73;
+  text-shadow: 0 0 10px rgba(255, 93, 115, 0.5);
+  animation: restDisruptBlink 2.4s step-end infinite;
 }
 
-.rested-clock-time {
+.rested-disrupt-sub {
+  font-family: Silkscreen, monospace;
+  font-size: 9px;
+  letter-spacing: 2px;
+  color: #9bd9f2;
+  opacity: 0.7;
+}
+
+.rested-disrupt-time {
   font-family: "Press Start 2P", monospace;
-  font-size: 17px;
+  font-size: 20px;
+  letter-spacing: 1px;
   color: #ffe08a;
   text-shadow: 0 0 10px rgba(255, 224, 138, 0.32);
+}
+
+@keyframes restDisruptBlink {
+  0%, 82%, 100% { opacity: 1; }
+  86%, 96% { opacity: 0.32; }
 }
 
 .rested-line {
@@ -970,18 +982,18 @@ textarea {
 }
 
 @media (max-width: 480px) {
-  /* Resting screen: keep both clocks on one comfortable row. */
-  .rested-clocks {
-    gap: 20px;
+  /* Resting screen: keep the disruption readout comfortable on small screens. */
+  .rested-disrupt-time {
+    font-size: 16px;
   }
 
-  .rested-clock-time {
-    font-size: 14px;
+  .rested-disrupt-label {
+    font-size: 10px;
+    letter-spacing: 2px;
   }
 
-  .rested-clock-label {
-    font-size: 9px;
-    letter-spacing: 1px;
+  .rested-disrupt-sub {
+    font-size: 8px;
   }
 
   .rested-line {

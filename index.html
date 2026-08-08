@@ -145,15 +145,10 @@
       <div class="rested-heart" aria-hidden="true">
         <div style="width:5px;height:5px;box-shadow:{{ heartShadow }};"></div>
       </div>
-      <div class="rested-clocks">
-        <div class="rested-clock">
-          <div class="rested-clock-label">{{ restPartnerLabel }}</div>
-          <div class="rested-clock-time">{{ restPartnerClock }}</div>
-        </div>
-        <div class="rested-clock">
-          <div class="rested-clock-label">{{ restSenderLabel }}</div>
-          <div class="rested-clock-time">{{ restSenderClock }}</div>
-        </div>
+      <div class="rested-disruption">
+        <div class="rested-disrupt-label">&#9888; CONNECTION DISRUPTED</div>
+        <div class="rested-disrupt-sub">{{ restDisruptSub }}</div>
+        <div class="rested-disrupt-time">{{ restElapsed }}</div>
       </div>
       <div class="rested-line">{{ restingLine }}</div>
       <div class="credits-scanlines" aria-hidden="true"></div>
@@ -617,10 +612,16 @@ class Component extends DCLogic {
     try{ window.localStorage.setItem(this.endedKey,'1'); }catch(e){}
     if(this._konamiHandler){ window.removeEventListener('keydown',this._konamiHandler); this._konamiHandler=null; }
     this.stopAmbient();
+    this.stopRainSound();
+    // She's letting go — softly fade out whatever was playing.
+    this.fadeAudioOut(document.getElementById('letter-music'),1400);
+    this.fadeAudioOut(document.getElementById('loading-music'),1400);
+    // Prime the farewell track now, while we still have the click gesture (silent until credits).
+    const cm=document.getElementById('credits-music'); if(cm){ try{ cm.currentTime=0; }catch(e){} cm.volume=0; cm.play().catch(()=>{}); }
     this.crtPowerDown();
     this.setState({ showKonami:false, screen:'shutdown', powerState:'done' });
     clearTimeout(this._shutdownTimer);
-    this._shutdownTimer=setTimeout(()=>{ this.setState({ screen:'credits' }); setTimeout(()=>this._startCreditsScroll(),140); },1750);
+    this._shutdownTimer=setTimeout(()=>{ this.setState({ screen:'credits' }); this.fadeAudioIn(document.getElementById('credits-music'),0.5,2600); setTimeout(()=>this._startCreditsScroll(),140); },1750);
   };
   openKonami=()=>{ this.konamiChime(); this.setState({ showKonami:true, letterAtBottom:false }); const bg=document.getElementById('loading-music'); if(bg) bg.pause(); const song=document.getElementById('letter-music'); if(song){ song.currentTime=0; song.volume=0.55; song.play().catch(()=>{}); } setTimeout(()=>{ const el=document.getElementById('konami-scroll'); if(el){ el.scrollTop=0; if(el.scrollHeight<=el.clientHeight+8) this.setState({ letterAtBottom:true }); } },60); };
   closeKonami=()=>{ this.blip(); const song=document.getElementById('letter-music'); if(song){ song.pause(); song.currentTime=0; } this.setState({ showKonami:false, letterAtBottom:false }); };
@@ -858,6 +859,30 @@ class Component extends DCLogic {
       return new Intl.DateTimeFormat('en-GB',{ hour:'2-digit', minute:'2-digit', second:'2-digit', hour12:false }).format(new Date());
     }
   }
+  // Resting-screen counter: time elapsed since the two last saw each other, ticking up. "DDDd HH:MM:SS".
+  elapsedSince(iso){
+    const then=new Date(iso).getTime();
+    if(isNaN(then)) return null;
+    let ms=Date.now()-then; if(ms<0) ms=0;
+    const s=Math.floor(ms/1000);
+    const days=Math.floor(s/86400);
+    const pad=n=>String(n).padStart(2,'0');
+    return String(days).padStart(3,'0')+'d '+pad(Math.floor(s%86400/3600))+':'+pad(Math.floor(s%3600/60))+':'+pad(s%60);
+  }
+  // Soft fade helpers for swapping songs without an abrupt cut.
+  fadeAudioOut(el,dur=1400){
+    if(!el) return;
+    const step=50, start=el.volume||0, steps=Math.max(1,dur/step);
+    let i=0; clearInterval(el._fade);
+    el._fade=setInterval(()=>{ i++; el.volume=Math.max(0,start*(1-i/steps)); if(i>=steps){ clearInterval(el._fade); el.pause(); try{ el.currentTime=0; }catch(e){} } },step);
+  }
+  fadeAudioIn(el,target=0.5,dur=2200){
+    if(!el) return;
+    clearInterval(el._fade); el.volume=0; el.play().catch(()=>{});
+    const step=50, steps=Math.max(1,dur/step);
+    let i=0;
+    el._fade=setInterval(()=>{ i++; el.volume=Math.min(target,target*(i/steps)); if(i>=steps) clearInterval(el._fade); },step);
+  }
   _startRestClock(){ clearInterval(this._clock); this._clock=setInterval(()=>this.setState(s=>({ clockTick:s.clockTick+1 })),1000); }
   addCal=()=>{
     this.blip();
@@ -987,8 +1012,8 @@ class Component extends DCLogic {
       letterScroll:this.letterScroll, letterAtBottom:s.letterAtBottom, letterNotAtBottom:!s.letterAtBottom,
       isShutdown:s.screen==='shutdown', isCredits:s.screen==='credits', isRested:s.screen==='rested',
       restingLine:this.config.restingLine || 'from ocean to ocean',
-      restPartnerLabel:partner.toUpperCase()+' TIME', restPartnerClock:this.restClock(partnerTz),
-      restSenderLabel:sender.toUpperCase()+' · SOMEWHERE', restSenderClock:this.restClock('UTC'),
+      restElapsed:this.elapsedSince(this.config.lastSeen) || this.restClock('UTC'),
+      restDisruptSub:this.config.disruptedSub || 'signal lost since we last held hands',
       creditLines:(this.config.creditsRoll||[]).map((t)=>{
         const big=typeof t==='string' && t.indexOf('# ')===0;
         const text=big?t.slice(2):(t||' ');
@@ -1004,5 +1029,6 @@ class Component extends DCLogic {
 </script>
 <audio id="loading-music" loop src="./assets/reference/Love Lies [8 Bit Tribute to Khalid & Normani] - 8 Bit Universe.mp3"></audio>
 <audio id="letter-music" loop src="./assets/reference/Billie Eilish, Khalid - lovely.mp3"></audio>
+<audio id="credits-music" loop src="./assets/reference/Khalid - Last Call (Lyrics).mp3"></audio>
 </body>
 </html>

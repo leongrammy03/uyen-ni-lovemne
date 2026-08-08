@@ -620,5 +620,9 @@ window.LOVE_GAME_CONFIG = {
   ],
 
   // ♥ The quiet resting screen shown on every visit after the ending.
+  // lastSeen: when you two last saw each other — the resting screen counts UP from this
+  // moment ("CONNECTION DISRUPTED  014d 06:41:27"). ⚠ SET THIS to your real date/time.
+  lastSeen: '2026-07-20T09:00:00',
+  disruptedSub: 'signal lost since we last held hands',
   restingLine: 'from ocean to ocean'
 };
