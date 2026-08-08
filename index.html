@@ -116,7 +116,7 @@
             <div onClick="{{ endGame }}" style="display:inline-block;font-family:'Press Start 2P',monospace;font-size:11px;color:#ff5d73;letter-spacing:1px;cursor:pointer;padding:10px 16px;border:2px solid #ff5d73;box-shadow:0 0 14px rgba(255,93,115,.4),3px 3px 0 #6b1f2e;background:#160a12;animation:glowPulse 1.6s ease-in-out infinite;">I&#39;M READY TO LET GO &#9829;</div>
           </sc-if>
           <sc-if value="{{ letterNotAtBottom }}" hint-placeholder-val="{{ true }}">
-            <div style="font-family:Silkscreen,monospace;font-size:11px;color:#4a3a52;letter-spacing:1px;">keep reading&#8230; &#8595;</div>
+            <div class="letter-scroll-hint" style="font-family:Silkscreen,monospace;font-size:11px;color:#ff9fb0;letter-spacing:1px;">keep reading&#8230; &#8595;</div>
           </sc-if>
         </div>
       </div>
@@ -604,8 +604,8 @@ class Component extends DCLogic {
   }
   blip(){ this.tone(740,0.07,'square',0.05,0); }
   konamiChime(){ [392,523,659,784,1046,1318,1568].forEach((f,i)=>this.tone(f,0.18,'square',0.05,i*0.065)); }
-  letterScroll=(e)=>{ const el=(e&&(e.currentTarget||e.target))||document.getElementById('konami-scroll'); if(!el) return; const atBottom=el.scrollTop+el.clientHeight>=el.scrollHeight-8; if(atBottom!==this.state.letterAtBottom) this.setState({ letterAtBottom:atBottom }); };
-  _startCreditsScroll(){ const outer=document.getElementById('credits-scroll'),inner=document.getElementById('credits-inner'); if(!outer||!inner){ clearTimeout(this._creditsRetry); this._creditsRetry=setTimeout(()=>this._startCreditsScroll(),150); return; } let moved=0; inner.style.transform='translateY(0)'; clearInterval(this._creditsScrollInterval); this._creditsScrollInterval=setInterval(()=>{ const max=inner.offsetHeight-outer.clientHeight; if(max<=0) return; if(moved>=max){ clearInterval(this._creditsScrollInterval); clearTimeout(this._restTimer); this._restTimer=setTimeout(()=>{ this._startRestClock(); this.setState({ screen:'rested' }); },2800); return; } moved+=0.35; inner.style.transform=`translateY(-${moved}px)`; },24); }
+  letterScroll=(e)=>{ const el=(e&&(e.currentTarget||e.target))||document.getElementById('konami-scroll'); if(!el) return; const atBottom=el.scrollTop+el.clientHeight>=el.scrollHeight-120; if(atBottom!==this.state.letterAtBottom) this.setState({ letterAtBottom:atBottom }); };
+  _startCreditsScroll(){ const outer=document.getElementById('credits-scroll'),inner=document.getElementById('credits-inner'); if(!outer||!inner){ clearTimeout(this._creditsRetry); this._creditsRetry=setTimeout(()=>this._startCreditsScroll(),150); return; } let moved=0; inner.style.transform='translateY(0)'; clearInterval(this._creditsScrollInterval); this._creditsScrollInterval=setInterval(()=>{ const max=inner.offsetHeight-outer.clientHeight; if(max<=0) return; if(moved>=max){ clearInterval(this._creditsScrollInterval); clearTimeout(this._restTimer); this._restTimer=setTimeout(()=>{ this.fadeAudioOut(document.getElementById('credits-music'),1800); this._startRestClock(); this.setState({ screen:'rested' }); },2800); return; } moved+=0.35; inner.style.transform=`translateY(-${moved}px)`; },24); }
   crtPowerDown(){ this.crtCrackle(); this.tone(70,0.55,'sine',0.06,0.03); this.tone(44,0.5,'sawtooth',0.04,0.18); }
   beginShutdown=()=>{
     if(this.state.screen==='shutdown'||this.state.screen==='credits') return;

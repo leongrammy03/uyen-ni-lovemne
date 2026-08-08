@@ -221,6 +221,16 @@ label,
   animation: restPulse 3.6s ease-in-out infinite;
 }
 
+.letter-scroll-hint {
+  display: inline-block;
+  animation: letterHintBounce 1.5s ease-in-out infinite;
+}
+
+@keyframes letterHintBounce {
+  0%, 100% { transform: translateY(0); opacity: 0.7; }
+  50% { transform: translateY(4px); opacity: 1; }
+}
+
 .rested-disruption {
   display: flex;
   flex-direction: column;
