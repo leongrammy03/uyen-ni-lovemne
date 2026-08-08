@@ -111,9 +111,26 @@
           </div>
         </div>
         <div style="padding:14px 32px 20px;border-top:2px solid #1e0d24;flex:none;text-align:center;">
-          <div style="font-family:Silkscreen,monospace;font-size:11px;color:#4a3a52;letter-spacing:1px;animation:blink 1.2s steps(1) infinite;">[ tap to close ]</div>
+          <div style="font-family:Silkscreen,monospace;font-size:11px;color:#4a3a52;letter-spacing:1px;animation:blink 1.2s steps(1) infinite;">[ tap to let go ]</div>
         </div>
       </div>
+    </div>
+  </sc-if>
+
+  <sc-if value="{{ isShutdown }}" hint-placeholder-val="{{ false }}">
+    <div class="crt-power-down" aria-hidden="true"></div>
+  </sc-if>
+
+  <sc-if value="{{ isCredits }}" hint-placeholder-val="{{ false }}">
+    <div class="credits-screen">
+      <div id="credits-scroll" class="credits-scroll">
+        <div id="credits-inner" class="credits-inner">
+          <sc-for list="{{ creditLines }}" as="cl" hint-placeholder-count="0">
+            <div style="{{ cl.style }}">{{ cl.text }}</div>
+          </sc-for>
+        </div>
+      </div>
+      <div class="credits-scanlines" aria-hidden="true"></div>
     </div>
   </sc-if>
 
@@ -403,8 +420,11 @@ class Component extends DCLogic {
     let completedDateIdeas=[];
     try{ completedDateIdeas=JSON.parse(window.localStorage.getItem(this.completedDateIdeasKey) || '[]'); }catch(e){ completedDateIdeas=[]; }
     const firstDateIdea=this.dateIdeas.find((idea)=>!completedDateIdeas.includes(idea.id)) || null;
+    this.endedKey='uyen-ni-game-ended';
+    let alreadyEnded=false;
+    try{ alreadyEnded=window.localStorage.getItem(this.endedKey)==='1'; }catch(e){ alreadyEnded=false; }
     this.state={
-      screen:'boot', powerState:'off', bootPct:0, reasonIdx:0, typed:'', showKonami:false,
+      screen:alreadyEnded?'credits':'boot', powerState:alreadyEnded?'done':'off', bootPct:alreadyEnded?100:0, reasonIdx:0, typed:'', showKonami:false,
       stageIdx:0, qIdx:0, lives:this.maxLives, selected:null, answered:false,
       noCount:0, noPos:null, yesScale:1, mood:'idle', clockTick:0,
       correctCount:0, wrongCount:0, achievementToast:null,
@@ -440,6 +460,13 @@ class Component extends DCLogic {
   }
 
   componentDidMount(){
+    if(this.state.screen==='credits'){
+      // Game already ended on a previous visit — stay dead, just roll credits.
+      this._letterMusicOnGesture=()=>{ const song=document.getElementById('letter-music'); if(song){ song.volume=0.55; song.play().catch(()=>{}); } };
+      window.addEventListener('pointerdown',this._letterMusicOnGesture,{ once:true });
+      setTimeout(()=>this._startCreditsScroll(),200);
+      return;
+    }
     this._boot=setInterval(()=>{
       this.setState(s=>{
         if(s.bootPct>=100) return null;
@@ -460,7 +487,7 @@ class Component extends DCLogic {
     window.addEventListener('keydown',this._konamiHandler);
     this._fetchWeather();
   }
-  componentWillUnmount(){ clearInterval(this._boot); clearInterval(this._type); clearInterval(this._clock); clearTimeout(this._advTimer); clearTimeout(this._achievementTimer); clearTimeout(this._powerTimer); if(this._unlockAudio) window.removeEventListener('pointerdown',this._unlockAudio); if(this._konamiHandler) window.removeEventListener('keydown',this._konamiHandler); const wo=document.getElementById('weather-overlay'); if(wo) wo.innerHTML=''; }
+  componentWillUnmount(){ clearInterval(this._boot); clearInterval(this._type); clearInterval(this._clock); clearInterval(this._konamiScrollInterval); clearInterval(this._creditsScrollInterval); clearTimeout(this._advTimer); clearTimeout(this._achievementTimer); clearTimeout(this._powerTimer); clearTimeout(this._shutdownTimer); if(this._unlockAudio) window.removeEventListener('pointerdown',this._unlockAudio); if(this._letterMusicOnGesture) window.removeEventListener('pointerdown',this._letterMusicOnGesture); if(this._konamiHandler) window.removeEventListener('keydown',this._konamiHandler); const wo=document.getElementById('weather-overlay'); if(wo) wo.innerHTML=''; this.stopAmbient(); this.stopRainSound(); }
   tick(){
     if(this.state.screen!=='win') return;
     const full=this.reasons[this.state.reasonIdx] || '';
@@ -484,6 +511,7 @@ class Component extends DCLogic {
     this.bootLoad();
     this.bootChime();
     this.setState({ screen:'ask' });
+    setTimeout(()=>this.startAmbient(), 800);
   };
   powerOn=()=>{
     if(this.state.powerState!=='off') return;
@@ -554,9 +582,80 @@ class Component extends DCLogic {
   }
   blip(){ this.tone(740,0.07,'square',0.05,0); }
   konamiChime(){ [392,523,659,784,1046,1318,1568].forEach((f,i)=>this.tone(f,0.18,'square',0.05,i*0.065)); }
-  _startKonamiScroll(){ const outer=document.getElementById('konami-scroll'),inner=document.getElementById('konami-inner'); if(!outer||!inner) return; let moved=0; inner.style.transform='translateY(0)'; clearInterval(this._konamiScrollInterval); this._konamiScrollInterval=setInterval(()=>{ const max=inner.offsetHeight-outer.clientHeight; if(moved>=max){ clearInterval(this._konamiScrollInterval); return; } moved+=0.25; inner.style.transform=`translateY(-${moved}px)`; },20); }
-  openKonami=()=>{ this.konamiChime(); this.setState({ showKonami:true }); setTimeout(()=>this._startKonamiScroll(),80); };
-  closeKonami=()=>{ this.blip(); clearInterval(this._konamiScrollInterval); const inner=document.getElementById('konami-inner'); if(inner) inner.style.transform=''; this.setState({ showKonami:false }); };
+  _startKonamiScroll(){ const outer=document.getElementById('konami-scroll'),inner=document.getElementById('konami-inner'); if(!outer||!inner) return; let moved=0; inner.style.transform='translateY(0)'; clearInterval(this._konamiScrollInterval); this._konamiScrollInterval=setInterval(()=>{ const max=inner.offsetHeight-outer.clientHeight; if(moved>=max){ clearInterval(this._konamiScrollInterval); clearTimeout(this._letterEndTimer); this._letterEndTimer=setTimeout(()=>this.beginShutdown(),3000); return; } moved+=0.25; inner.style.transform=`translateY(-${moved}px)`; },20); }
+  _startCreditsScroll(){ const outer=document.getElementById('credits-scroll'),inner=document.getElementById('credits-inner'); if(!outer||!inner){ clearTimeout(this._creditsRetry); this._creditsRetry=setTimeout(()=>this._startCreditsScroll(),150); return; } let moved=0; inner.style.transform='translateY(0)'; clearInterval(this._creditsScrollInterval); this._creditsScrollInterval=setInterval(()=>{ const max=inner.offsetHeight-outer.clientHeight; if(max<=0) return; if(moved>=max){ clearInterval(this._creditsScrollInterval); return; } moved+=0.35; inner.style.transform=`translateY(-${moved}px)`; },24); }
+  crtPowerDown(){ this.crtCrackle(); this.tone(70,0.55,'sine',0.06,0.03); this.tone(44,0.5,'sawtooth',0.04,0.18); }
+  beginShutdown=()=>{
+    if(this.state.screen==='shutdown'||this.state.screen==='credits') return;
+    clearInterval(this._konamiScrollInterval);
+    clearTimeout(this._letterEndTimer);
+    try{ window.localStorage.setItem(this.endedKey,'1'); }catch(e){}
+    if(this._konamiHandler){ window.removeEventListener('keydown',this._konamiHandler); this._konamiHandler=null; }
+    this.stopAmbient();
+    this.crtPowerDown();
+    const inner=document.getElementById('konami-inner'); if(inner) inner.style.transform='';
+    this.setState({ showKonami:false, screen:'shutdown', powerState:'done' });
+    clearTimeout(this._shutdownTimer);
+    this._shutdownTimer=setTimeout(()=>{ this.setState({ screen:'credits' }); setTimeout(()=>this._startCreditsScroll(),140); },1750);
+  };
+  openKonami=()=>{ this.konamiChime(); this.setState({ showKonami:true }); const bg=document.getElementById('loading-music'); if(bg) bg.pause(); const song=document.getElementById('letter-music'); if(song){ song.currentTime=0; song.volume=0.55; song.play().catch(()=>{}); } setTimeout(()=>this._startKonamiScroll(),80); };
+  closeKonami=()=>{ this.beginShutdown(); };
+
+  startAmbient(){
+    const ac=this.ensureAudio(); if(!ac||this._ambientStarted) return;
+    this._ambientStarted=true;
+    // Soft dreamy pad — A minor pentatonic, very quiet sine layers with slow vibrato
+    const freqs=[110,165,220,261.63,329.63,440];
+    const vols=[0.022,0.016,0.014,0.011,0.009,0.007];
+    this._ambientOscs=[];
+    freqs.forEach((f,i)=>{
+      const osc=ac.createOscillator(); osc.type='sine'; osc.frequency.value=f;
+      const lfo=ac.createOscillator(); lfo.type='sine'; lfo.frequency.value=0.12+i*0.04;
+      const lfoG=ac.createGain(); lfoG.gain.value=0.25;
+      lfo.connect(lfoG); lfoG.connect(osc.frequency);
+      const g=ac.createGain();
+      g.gain.setValueAtTime(0,ac.currentTime);
+      g.gain.linearRampToValueAtTime(vols[i],ac.currentTime+3+i*0.4);
+      osc.connect(g); g.connect(ac.destination);
+      osc.start(); lfo.start();
+      this._ambientOscs.push({osc,lfo,g});
+    });
+  }
+  stopAmbient(){
+    if(!this._ambientOscs||!this.ac) return;
+    const ac=this.ac;
+    this._ambientOscs.forEach(({osc,lfo,g})=>{
+      g.gain.setValueAtTime(g.gain.value,ac.currentTime);
+      g.gain.linearRampToValueAtTime(0,ac.currentTime+2);
+      setTimeout(()=>{ try{osc.stop();lfo.stop();}catch(e){} },2200);
+    });
+    this._ambientOscs=null; this._ambientStarted=false;
+  }
+  startRainSound(){
+    const ac=this.ensureAudio(); if(!ac||this._rainSrc) return;
+    const sr=ac.sampleRate;
+    const buf=ac.createBuffer(1,sr*3,sr);
+    const data=buf.getChannelData(0);
+    for(let i=0;i<data.length;i++) data[i]=Math.random()*2-1;
+    const src=ac.createBufferSource(); src.buffer=buf; src.loop=true;
+    const bp=ac.createBiquadFilter(); bp.type='bandpass'; bp.frequency.value=700; bp.Q.value=0.35;
+    const lp=ac.createBiquadFilter(); lp.type='lowpass'; lp.frequency.value=2200;
+    const g=ac.createGain();
+    g.gain.setValueAtTime(0,ac.currentTime);
+    g.gain.linearRampToValueAtTime(0.16,ac.currentTime+2.5);
+    src.connect(bp); bp.connect(lp); lp.connect(g); g.connect(ac.destination);
+    src.start();
+    this._rainSrc={src,g};
+  }
+  stopRainSound(){
+    if(!this._rainSrc||!this.ac) return;
+    const ac=this.ac; const {src,g}=this._rainSrc;
+    g.gain.setValueAtTime(g.gain.value,ac.currentTime);
+    g.gain.linearRampToValueAtTime(0,ac.currentTime+1.5);
+    setTimeout(()=>{ try{src.stop();}catch(e){} },1700);
+    this._rainSrc=null;
+  }
+
   _fetchWeather(){
     const hash=location.hash.replace('#','');
     if(hash.startsWith('weather=')){
@@ -608,6 +707,7 @@ class Component extends DCLogic {
     };
 
     if(type==='rain'||type==='storm'){
+      this.startRainSound();
       // Pixel rain drops: wider, taller, more opaque
       for(let i=0;i<80;i++){
         const d=document.createElement('div');
@@ -850,11 +950,21 @@ class Component extends DCLogic {
       dodge:this.dodge, sayYes:this.sayYes, blipH:()=>this.blip(), addCal:this.addCal,
       setDateIdea:this.setDateIdea, setDate:this.set('date'), setTime:this.set('time'), setDur:this.set('dur'), setLoc:this.set('loc'),
       showKonami:s.showKonami, closeKonami:this.closeKonami,
+      isShutdown:s.screen==='shutdown', isCredits:s.screen==='credits',
+      creditLines:(this.config.creditsRoll||[]).map((t)=>{
+        const big=typeof t==='string' && t.indexOf('# ')===0;
+        const text=big?t.slice(2):(t||' ');
+        const style=big
+          ? "font-family:'Press Start 2P',monospace;font-size:20px;line-height:1.6;color:#ff5d73;text-shadow:0 0 14px rgba(255,93,115,.6),3px 3px 0 #6b1f2e;letter-spacing:2px;text-align:center;margin:12px 0;"
+          : "font-family:Silkscreen,monospace;font-size:14px;line-height:1.95;color:#ffe08a;letter-spacing:1px;text-align:center;white-space:pre;";
+        return { text, style };
+      }),
       konamiLines:this.konamiLetter.map((t)=>({ text:t||' ' }))
     };
   }
 }
 </script>
 <audio id="loading-music" loop src="./assets/reference/Love Lies [8 Bit Tribute to Khalid & Normani] - 8 Bit Universe.mp3"></audio>
+<audio id="letter-music" loop src="./assets/reference/Billie Eilish, Khalid - lovely.mp3"></audio>
 </body>
 </html>

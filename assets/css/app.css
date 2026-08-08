@@ -79,6 +79,89 @@ label,
   animation: crtOverlayBoot 1.45s steps(1) forwards;
 }
 
+/* The screen dying — a CRT collapsing to a line, then a dot, then nothing. */
+.crt-power-down {
+  position: fixed;
+  inset: 0;
+  z-index: 210;
+  pointer-events: all;
+  background-color: rgba(5, 3, 8, 0);
+  animation: crtDownBg 1.75s ease-in forwards;
+}
+
+.crt-power-down::before {
+  content: "";
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  transform: translate(-50%, -50%);
+  background: #fff8f0;
+  box-shadow:
+    0 0 16px #fff8f0,
+    0 0 42px rgba(255, 93, 115, 0.85),
+    0 0 80px rgba(155, 217, 242, 0.5);
+  animation: crtCollapse 1.75s cubic-bezier(0.6, 0, 0.2, 1) forwards;
+}
+
+@keyframes crtDownBg {
+  0% { background-color: rgba(5, 3, 8, 0); }
+  22% { background-color: rgba(5, 3, 8, 1); }
+  100% { background-color: rgba(5, 3, 8, 1); }
+}
+
+@keyframes crtCollapse {
+  0% { width: min(86vw, 680px); height: 62vh; opacity: 0; }
+  9% { width: min(86vw, 680px); height: 62vh; opacity: 0.95; }
+  34% { width: min(86vw, 680px); height: 4px; opacity: 1; }
+  70% { width: 7px; height: 4px; opacity: 1; }
+  86% { width: 4px; height: 4px; opacity: 0.95; }
+  100% { width: 0; height: 0; opacity: 0; }
+}
+
+/* Credits — the game is over, and it stays over. */
+.credits-screen {
+  position: fixed;
+  inset: 0;
+  z-index: 205;
+  background:
+    radial-gradient(ellipse at center, rgba(255, 93, 115, 0.06) 0%, transparent 60%),
+    #050308;
+  display: flex;
+  align-items: stretch;
+  justify-content: center;
+  overflow: hidden;
+  cursor: default;
+}
+
+.credits-scroll {
+  position: relative;
+  width: min(560px, 92vw);
+  height: 100vh;
+  overflow: hidden;
+}
+
+.credits-inner {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  padding-top: 82vh;
+  padding-bottom: 60vh;
+  will-change: transform;
+}
+
+.credits-scanlines {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  background: repeating-linear-gradient(
+    0deg,
+    rgba(0, 0, 0, 0.22) 0px,
+    rgba(0, 0, 0, 0.22) 1px,
+    transparent 1px,
+    transparent 3px
+  );
+}
+
 .crt-power-on::before {
   content: "";
   position: absolute;
