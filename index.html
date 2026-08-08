@@ -98,20 +98,26 @@
   </sc-if>
 
   <sc-if value="{{ showKonami }}" hint-placeholder-val="{{ false }}">
-    <div onClick="{{ closeKonami }}" style="position:fixed;inset:0;z-index:190;background:rgba(5,2,10,.97);display:flex;flex-direction:column;align-items:center;justify-content:center;padding:24px;box-sizing:border-box;cursor:pointer;">
+    <div style="position:fixed;inset:0;z-index:190;background:rgba(5,2,10,.97);display:flex;flex-direction:column;align-items:center;justify-content:center;padding:24px;box-sizing:border-box;">
       <div style="width:min(520px,90vw);background:#0b0810;border:4px solid #ff9fb0;box-shadow:0 0 48px rgba(255,93,115,.35),inset 3px 3px 0 #1e0d24,inset -3px -3px 0 #050308;display:flex;flex-direction:column;box-sizing:border-box;overflow:hidden;">
-        <div style="padding:20px 32px 14px;border-bottom:2px solid #1e0d24;flex:none;">
-          <div style="font-family:Silkscreen,monospace;font-size:10px;color:#ff9fb0;letter-spacing:3px;text-align:center;">&#9829; SECRET TRANSMISSION &#9829;</div>
+        <div style="padding:16px 20px 14px 32px;border-bottom:2px solid #1e0d24;flex:none;display:flex;align-items:center;gap:12px;">
+          <div style="font-family:Silkscreen,monospace;font-size:10px;color:#ff9fb0;letter-spacing:3px;text-align:center;flex:1;">&#9829; SECRET TRANSMISSION &#9829;</div>
+          <div onClick="{{ closeKonami }}" title="close" style="font-family:Silkscreen,monospace;font-size:14px;color:#6a5a72;cursor:pointer;flex:none;padding:2px 8px;line-height:1;">&#10005;</div>
         </div>
-        <div id="konami-scroll" style="height:52vh;overflow:hidden;padding:0 32px;position:relative;">
-          <div id="konami-inner" style="padding:20px 0 60px;display:flex;flex-direction:column;gap:14px;will-change:transform;">
+        <div id="konami-scroll" onScroll="{{ letterScroll }}" style="height:52vh;overflow-y:auto;overflow-x:hidden;padding:0 32px;position:relative;-webkit-overflow-scrolling:touch;">
+          <div id="konami-inner" style="padding:20px 0 40px;display:flex;flex-direction:column;gap:14px;">
             <sc-for list="{{ konamiLines }}" as="kl" hint-placeholder-count="0">
               <div style="font-family:Silkscreen,monospace;font-size:14px;line-height:1.8;color:#ffe08a;">{{ kl.text }}</div>
             </sc-for>
           </div>
         </div>
-        <div style="padding:14px 32px 20px;border-top:2px solid #1e0d24;flex:none;text-align:center;">
-          <div style="font-family:Silkscreen,monospace;font-size:11px;color:#4a3a52;letter-spacing:1px;animation:blink 1.2s steps(1) infinite;">[ tap to let go ]</div>
+        <div style="padding:14px 32px 20px;border-top:2px solid #1e0d24;flex:none;text-align:center;min-height:26px;">
+          <sc-if value="{{ letterAtBottom }}" hint-placeholder-val="{{ false }}">
+            <div onClick="{{ endGame }}" style="display:inline-block;font-family:'Press Start 2P',monospace;font-size:11px;color:#ff5d73;letter-spacing:1px;cursor:pointer;padding:10px 16px;border:2px solid #ff5d73;box-shadow:0 0 14px rgba(255,93,115,.4),3px 3px 0 #6b1f2e;background:#160a12;animation:glowPulse 1.6s ease-in-out infinite;">I&#39;M READY TO LET GO &#9829;</div>
+          </sc-if>
+          <sc-if value="{{ letterNotAtBottom }}" hint-placeholder-val="{{ true }}">
+            <div style="font-family:Silkscreen,monospace;font-size:11px;color:#4a3a52;letter-spacing:1px;">keep reading&#8230; &#8595;</div>
+          </sc-if>
         </div>
       </div>
     </div>
@@ -424,7 +430,7 @@ class Component extends DCLogic {
     let alreadyEnded=false;
     try{ alreadyEnded=window.localStorage.getItem(this.endedKey)==='1'; }catch(e){ alreadyEnded=false; }
     this.state={
-      screen:alreadyEnded?'credits':'boot', powerState:alreadyEnded?'done':'off', bootPct:alreadyEnded?100:0, reasonIdx:0, typed:'', showKonami:false,
+      screen:alreadyEnded?'credits':'boot', powerState:alreadyEnded?'done':'off', bootPct:alreadyEnded?100:0, reasonIdx:0, typed:'', showKonami:false, letterAtBottom:false,
       stageIdx:0, qIdx:0, lives:this.maxLives, selected:null, answered:false,
       noCount:0, noPos:null, yesScale:1, mood:'idle', clockTick:0,
       correctCount:0, wrongCount:0, achievementToast:null,
@@ -582,24 +588,22 @@ class Component extends DCLogic {
   }
   blip(){ this.tone(740,0.07,'square',0.05,0); }
   konamiChime(){ [392,523,659,784,1046,1318,1568].forEach((f,i)=>this.tone(f,0.18,'square',0.05,i*0.065)); }
-  _startKonamiScroll(){ const outer=document.getElementById('konami-scroll'),inner=document.getElementById('konami-inner'); if(!outer||!inner) return; let moved=0; inner.style.transform='translateY(0)'; clearInterval(this._konamiScrollInterval); this._konamiScrollInterval=setInterval(()=>{ const max=inner.offsetHeight-outer.clientHeight; if(moved>=max){ clearInterval(this._konamiScrollInterval); clearTimeout(this._letterEndTimer); this._letterEndTimer=setTimeout(()=>this.beginShutdown(),3000); return; } moved+=0.25; inner.style.transform=`translateY(-${moved}px)`; },20); }
+  letterScroll=(e)=>{ const el=(e&&(e.currentTarget||e.target))||document.getElementById('konami-scroll'); if(!el) return; const atBottom=el.scrollTop+el.clientHeight>=el.scrollHeight-8; if(atBottom!==this.state.letterAtBottom) this.setState({ letterAtBottom:atBottom }); };
   _startCreditsScroll(){ const outer=document.getElementById('credits-scroll'),inner=document.getElementById('credits-inner'); if(!outer||!inner){ clearTimeout(this._creditsRetry); this._creditsRetry=setTimeout(()=>this._startCreditsScroll(),150); return; } let moved=0; inner.style.transform='translateY(0)'; clearInterval(this._creditsScrollInterval); this._creditsScrollInterval=setInterval(()=>{ const max=inner.offsetHeight-outer.clientHeight; if(max<=0) return; if(moved>=max){ clearInterval(this._creditsScrollInterval); return; } moved+=0.35; inner.style.transform=`translateY(-${moved}px)`; },24); }
   crtPowerDown(){ this.crtCrackle(); this.tone(70,0.55,'sine',0.06,0.03); this.tone(44,0.5,'sawtooth',0.04,0.18); }
   beginShutdown=()=>{
     if(this.state.screen==='shutdown'||this.state.screen==='credits') return;
-    clearInterval(this._konamiScrollInterval);
-    clearTimeout(this._letterEndTimer);
     try{ window.localStorage.setItem(this.endedKey,'1'); }catch(e){}
     if(this._konamiHandler){ window.removeEventListener('keydown',this._konamiHandler); this._konamiHandler=null; }
     this.stopAmbient();
     this.crtPowerDown();
-    const inner=document.getElementById('konami-inner'); if(inner) inner.style.transform='';
     this.setState({ showKonami:false, screen:'shutdown', powerState:'done' });
     clearTimeout(this._shutdownTimer);
     this._shutdownTimer=setTimeout(()=>{ this.setState({ screen:'credits' }); setTimeout(()=>this._startCreditsScroll(),140); },1750);
   };
-  openKonami=()=>{ this.konamiChime(); this.setState({ showKonami:true }); const bg=document.getElementById('loading-music'); if(bg) bg.pause(); const song=document.getElementById('letter-music'); if(song){ song.currentTime=0; song.volume=0.55; song.play().catch(()=>{}); } setTimeout(()=>this._startKonamiScroll(),80); };
-  closeKonami=()=>{ this.beginShutdown(); };
+  openKonami=()=>{ this.konamiChime(); this.setState({ showKonami:true, letterAtBottom:false }); const bg=document.getElementById('loading-music'); if(bg) bg.pause(); const song=document.getElementById('letter-music'); if(song){ song.currentTime=0; song.volume=0.55; song.play().catch(()=>{}); } setTimeout(()=>{ const el=document.getElementById('konami-scroll'); if(el){ el.scrollTop=0; if(el.scrollHeight<=el.clientHeight+8) this.setState({ letterAtBottom:true }); } },60); };
+  closeKonami=()=>{ this.blip(); const song=document.getElementById('letter-music'); if(song){ song.pause(); song.currentTime=0; } this.setState({ showKonami:false, letterAtBottom:false }); };
+  endGame=()=>{ this.beginShutdown(); };
 
   startAmbient(){
     const ac=this.ensureAudio(); if(!ac||this._ambientStarted) return;
@@ -949,7 +953,8 @@ class Component extends DCLogic {
       containerRef:this.containerRef,
       dodge:this.dodge, sayYes:this.sayYes, blipH:()=>this.blip(), addCal:this.addCal,
       setDateIdea:this.setDateIdea, setDate:this.set('date'), setTime:this.set('time'), setDur:this.set('dur'), setLoc:this.set('loc'),
-      showKonami:s.showKonami, closeKonami:this.closeKonami,
+      showKonami:s.showKonami, closeKonami:this.closeKonami, endGame:this.endGame,
+      letterScroll:this.letterScroll, letterAtBottom:s.letterAtBottom, letterNotAtBottom:!s.letterAtBottom,
       isShutdown:s.screen==='shutdown', isCredits:s.screen==='credits',
       creditLines:(this.config.creditsRoll||[]).map((t)=>{
         const big=typeof t==='string' && t.indexOf('# ')===0;
